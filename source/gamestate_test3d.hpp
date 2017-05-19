@@ -95,13 +95,15 @@ struct gamestate_test3d : gamestate_common
 		
 	void update( object_repo* )
 		{
+		update_fps();
+		
 		point points[3];
 		points[ 0 ].x = 150 + 100; points[ 0 ].y = 0-10;
 		points[ 1 ].x = 150 +   0-10; points[ 1 ].y = 100;
 		points[ 2 ].x = 150 + 250; points[ 2 ].y = 199+10;
 		int count = 3;
 		int color = 255;
-        for( int i = 0; i < 2500-666; ++i )
+        for( int i = 0; i < 2000-666; ++i )
 			graph->polygon_fill<16>( (int*)points, count, (uint8_t) color );
 
 		static float cx = 0.0f;

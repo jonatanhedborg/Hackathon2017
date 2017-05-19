@@ -37,7 +37,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "ogg.hpp"
 
 // additional vecmath helpers
 namespace vecmath { 
@@ -57,6 +56,8 @@ inline float3 transform_normal( float3 v, float4x4 matrix ) { return mul( v, flo
 inline float4 transform( float4 v, float4x4 matrix ) { return mul( v, matrix ); }
 } /* namespace vecmath */
 
+#include "intersection.hpp"
+#include "ogg.hpp"
 
 // screen
 struct pal_screen
@@ -304,6 +305,7 @@ int update_thread_proc( void* user_data)
 	
 	// frame time
 	frametimer_t* frametimer = frametimer_init( 0 );
+	frametimer_lock_rate( frametimer, 60 );
 
 	// "global" systems
 	object_repo objrepo;
