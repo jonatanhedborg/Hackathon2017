@@ -199,7 +199,9 @@ if defined data (
 	popd
 )
 
-copy tobii\tobii_stream_engine.dll .runtime\
+xcopy /d /y tobii\tobii_stream_engine.dll .runtime\ | find /v "File(s) copied"
+if not exist .runtime\data mkdir .runtime\data
+xcopy /d /s /e /y source_data .runtime\data | find /v "File(s) copied"
 
 if defined package call :package
 

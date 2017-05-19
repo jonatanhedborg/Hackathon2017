@@ -260,9 +260,9 @@ int update_thread_proc( void* user_data)
 		, &callback_context );
 
 		
-	// Mount current working folder as a virtual "/data" path
+	// Mount current working folder's "data" folder as a virtual "/data" path
 	assetsys_t* assetsys = assetsys_create( 0 );
-	assetsys_mount( assetsys, ".", "/data" ); 
+	assetsys_mount( assetsys, "./data", "/data" ); 
 
 	// sound test
 	assetsys_file_t file;

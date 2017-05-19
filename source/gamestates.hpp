@@ -11,5 +11,5 @@ void init_gamestates( gamestate::game_state_system<object_repo>* gamestates )
 	gamestates->add<gamestate_headpose, &gamestate_headpose::update>();
 
 	// set initial game state
-	gamestates->set<gamestate_test3d>();
+	gamestates->set<gamestate_headpose>();
 	}

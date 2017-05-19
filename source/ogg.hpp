@@ -119,6 +119,6 @@ audiosys_audio_source_t ogg_load( void const* data, int size )
 void ogg_free( audiosys_audio_source_t source )
 	{
 	ogg_t* ogg = (ogg_t*) source.instance;
-	free( ogg->sample_pairs );
-	free( ogg );
+	if( ogg && ogg->sample_pairs ) free( ogg->sample_pairs );
+	if( ogg ) free( ogg );
 	}
