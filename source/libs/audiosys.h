@@ -850,14 +850,17 @@ void audiosys_music_cross_fade( audiosys_t* audiosys, audiosys_audio_source_t so
 
 void audiosys_music_position_set( audiosys_t* audiosys, float position )
 	{
-    // TODO: implement
+    audiosys->music.position = (int)( position * 44100.0f );
+    audiosys->music.modified = 1;
 	}
 
 
 float audiosys_music_position( audiosys_t* audiosys )
 	{
-    // TODO: implement
-    return 0.0f;
+    int length = audiosys->music.source.length_in_sample_pairs( audiosys->music.source.instance );
+    int offset = audiosys->music.position;
+	offset = offset < 0 ? 0 : offset > length ? length : offset;
+	return offset / 44100.0f;
     }
 
 
@@ -908,55 +911,139 @@ float audiosys_music_pan( audiosys_t* audiosys )
 
 void audiosys_ambience_play( audiosys_t* audiosys, audiosys_audio_source_t source, float fade_in_time )
 	{
+	audiosys_internal_init_voice( &audiosys->ambience, source );
+	audiosys->ambience.fade_in_time = fade_in_time;
+	if( fade_in_time > 0.0f ) 
+		{
+		audiosys->ambience.state = AUDIOSYS_INTERNAL_VOICE_STATE_FADING_IN;
+		audiosys->ambience.fade_progress = 0.0f;
+		}
 	}
 
 
 void audiosys_ambience_stop( audiosys_t* audiosys, float fade_out_time )
 	{
+	audiosys->ambience.modified = 1;
+	if( fade_out_time > 0.0f ) 
+		{
+		audiosys->ambience.fade_out_time = fade_out_time;
+		audiosys->ambience.state = AUDIOSYS_INTERNAL_VOICE_STATE_FADING_OUT;
+		}
+	else
+		{
+        if( audiosys->ambience.source.release ) audiosys->ambience.source.release( audiosys->ambience.source.instance );
+		audiosys->ambience.source.instance = NULL;
+        audiosys->ambience.source.length_in_sample_pairs = NULL;
+        audiosys->ambience.source.release = NULL;
+        audiosys->ambience.source.sample_pairs = NULL;
+		audiosys->ambience.state = AUDIOSYS_INTERNAL_VOICE_STATE_STOPPED;
+		}
 	}
 
 
 void audiosys_ambience_pause( audiosys_t* audiosys )
 	{
+    if( audiosys->ambience.paused == 1 ) return;
+    audiosys->ambience.modified = 1;
+    audiosys->ambience.paused = 1;
 	}
 
 
 void audiosys_ambience_resume( audiosys_t* audiosys )
 	{
+    if( audiosys->ambience.paused == 0 ) return;
+    audiosys->ambience.modified = 1;
+    audiosys->ambience.paused = 0;
 	}
 
 
 void audiosys_ambience_switch( audiosys_t* audiosys, audiosys_audio_source_t source, float fade_out_time, float fade_in_time )
 	{
+	audiosys->ambience.modified = 1;
+	if( fade_out_time > 0.0f ) 
+		{
+		audiosys->ambience.fade_out_time = fade_out_time;
+		audiosys->ambience.state = AUDIOSYS_INTERNAL_VOICE_STATE_FADING_OUT;
+		}
+	else
+		{
+        if( audiosys->ambience.source.release ) audiosys->ambience.source.release( audiosys->ambience.source.instance );
+		audiosys->ambience.source.instance = NULL;
+        audiosys->ambience.source.length_in_sample_pairs = NULL;
+        audiosys->ambience.source.release = NULL;
+        audiosys->ambience.source.sample_pairs = NULL;
+		audiosys->ambience.state = AUDIOSYS_INTERNAL_VOICE_STATE_STOPPED;
+		audiosys_ambience_play( audiosys, source, fade_in_time );
+		return;
+		}
+    audiosys_internal_voice_t temp = audiosys->ambience;
+    audiosys->ambience = audiosys->ambience_crossfade;
+    audiosys->ambience_crossfade = temp;
+
+    audiosys_internal_init_voice( &audiosys->ambience, source );
+	audiosys->ambience.fade_in_time = fade_in_time;
+	if( fade_in_time > 0.0f ) audiosys->ambience.fade_progress = 0.0f;
+	audiosys->ambience.state = AUDIOSYS_INTERNAL_VOICE_STATE_QUEUED;
 	}
 
 
 void audiosys_ambience_cross_fade( audiosys_t* audiosys, audiosys_audio_source_t source, float cross_fade_time )
 	{
+	audiosys->ambience.modified = 1;
+	if( cross_fade_time > 0.0f ) 
+		{
+		audiosys->ambience.fade_out_time = cross_fade_time;
+		audiosys->ambience.state = AUDIOSYS_INTERNAL_VOICE_STATE_FADING_OUT;
+		}
+	else
+		{
+        if( audiosys->ambience.source.release ) audiosys->ambience.source.release( audiosys->ambience.source.instance );
+		audiosys->ambience.source.instance = NULL;
+        audiosys->ambience.source.length_in_sample_pairs = NULL;
+        audiosys->ambience.source.release = NULL;
+        audiosys->ambience.source.sample_pairs = NULL;
+		audiosys->ambience.state = AUDIOSYS_INTERNAL_VOICE_STATE_STOPPED;
+		}
+    audiosys_internal_voice_t temp = audiosys->ambience;
+    audiosys->ambience = audiosys->ambience_crossfade;
+    audiosys->ambience_crossfade = temp;
+
+    audiosys_internal_init_voice( &audiosys->ambience, source );
+	audiosys->ambience.fade_in_time = cross_fade_time;
+	if( cross_fade_time > 0.0f ) 
+		{
+		audiosys->ambience.state = AUDIOSYS_INTERNAL_VOICE_STATE_FADING_IN;
+		audiosys->ambience.fade_progress = 0.0f;
+		}
 	}
 
 
 void audiosys_ambience_position_set( audiosys_t* audiosys, float position )
 	{
+    audiosys->ambience.position = (int)( position * 44100.0f );
+    audiosys->ambience.modified = 1;
 	}
 
 
 float audiosys_ambience_position( audiosys_t* audiosys )
 	{
-    return 0;
+    int length = audiosys->ambience.source.length_in_sample_pairs( audiosys->ambience.source.instance );
+    int offset = audiosys->ambience.position;
+	offset = offset < 0 ? 0 : offset > length ? length : offset;
+	return offset / 44100.0f;
 	}
 
 
 audiosys_audio_source_t audiosys_ambience_source( audiosys_t* audiosys )
 	{
-    audiosys_audio_source_t source;
-    memset( &source, 0, sizeof( source ) );
-    return source;
+    return audiosys->ambience.source;
 	}
 
 
 void audiosys_ambience_loop_set( audiosys_t* audiosys, audiosys_loop_t loop )
 	{
+    audiosys->ambience.modified = 1;
+	audiosys->ambience.loop = loop == AUDIOSYS_LOOP_ON ? 1 : 0;	
 	}
 
 
@@ -968,6 +1055,8 @@ audiosys_loop_t audiosys_ambience_loop( audiosys_t* audiosys )
 
 void audiosys_ambience_volume_set( audiosys_t* audiosys, float volume )
 	{
+	audiosys->ambience.modified = 1;
+	audiosys->ambience.volume = volume < 0.0f ? 0.0f : volume > 1.0f ? 1.0f : volume;
 	}
 
 
@@ -979,6 +1068,8 @@ float audiosys_ambience_volume( audiosys_t* audiosys )
 
 void audiosys_ambience_pan_set( audiosys_t* audiosys, float pan )
 	{
+	audiosys->ambience.modified = 1;
+	audiosys->ambience.pan = pan < -1.0f ? -1.0f : pan > 1.0f ? 1.0f : pan;
 	}
 
 
@@ -1037,69 +1128,114 @@ void audiosys_sound_stop( audiosys_t* audiosys, AUDIOSYS_U64 handle, float fade_
 
 void audiosys_sound_pause( audiosys_t* audiosys, AUDIOSYS_U64 handle )
 	{
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return;
+    if( sound->paused == 1 ) return;
+    sound->modified = 1;
+    sound->paused = 1;
 	}
 
 
 void audiosys_sound_resume( audiosys_t* audiosys, AUDIOSYS_U64 handle )
 	{
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return;
+    if( sound->paused == 0 ) return;
+    sound->modified = 1;
+    sound->paused = 0;
 	}
 
 
 void audiosys_sound_position_set( audiosys_t* audiosys, AUDIOSYS_U64 handle, float position )
 	{
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return;
+    sound->position = (int)( position * 44100.0f );
+    sound->modified = 1;
 	}
 
 
 float audiosys_sound_position( audiosys_t* audiosys, AUDIOSYS_U64 handle )
 	{
-    return 0;
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return 0.0f;
+
+    int length = sound->source.length_in_sample_pairs( sound->source.instance );
+    int offset = sound->position;
+	offset = offset < 0 ? 0 : offset > length ? length : offset;
+	return offset / 44100.0f;
 	}
 
 
 audiosys_audio_source_t audiosys_sound_source( audiosys_t* audiosys, AUDIOSYS_U64 handle )
 	{
-    audiosys_audio_source_t source;
-    memset( &source, 0, sizeof( source ) );
-    return source;
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) 
+        {
+        audiosys_audio_source_t null_source;
+        memset( &null_source, 0, sizeof( null_source ) );
+        return null_source;
+        }
+    return sound->source;
 	}
 
 
 void audiosys_sound_loop_set( audiosys_t* audiosys, AUDIOSYS_U64 handle, audiosys_loop_t loop )
 	{
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return;
+    sound->modified = 1;
+	sound->loop = loop == AUDIOSYS_LOOP_ON ? 1 : 0;	
 	}
 
 
 audiosys_loop_t audiosys_sound_loop( audiosys_t* audiosys, AUDIOSYS_U64 handle )
 	{
-    return AUDIOSYS_LOOP_OFF;
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return AUDIOSYS_LOOP_OFF;
+    return sound->loop ? AUDIOSYS_LOOP_ON : AUDIOSYS_LOOP_OFF;
 	}
 
 
 void audiosys_sound_volume_set( audiosys_t* audiosys, AUDIOSYS_U64 handle, float volume )
 	{
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return;
+	sound->modified = 1;
+	sound->volume = volume < 0.0f ? 0.0f : volume > 1.0f ? 1.0f : volume;
 	}
 
 
 float audiosys_sound_volume( audiosys_t* audiosys, AUDIOSYS_U64 handle )
 	{
-    return 0;
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return 0.0f;
+    return sound->volume;
 	}
 
 
 void audiosys_sound_pan_set( audiosys_t* audiosys, AUDIOSYS_U64 handle, float pan )
 	{
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return;
+	sound->modified = 1;
+	sound->pan = pan < -1.0f ? -1.0f : pan > 1.0f ? 1.0f : pan;
 	}
 
 
 float audiosys_sound_pan( audiosys_t* audiosys, AUDIOSYS_U64 handle )
 	{
-    return 0;
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return 0.0f;
+    return sound->pan;
 	}
 
 
 audiosys_sound_valid_t audiosys_sound_valid(audiosys_t* audiosys, AUDIOSYS_U64 handle )
 	{
-	return AUDIOSYS_SOUND_INVALID;
+	audiosys_internal_voice_t* sound = audiosys_internal_get_sound( audiosys, handle );
+	if( !sound ) return AUDIOSYS_SOUND_INVALID;
+	return AUDIOSYS_SOUND_VALID;
 	}
 
 

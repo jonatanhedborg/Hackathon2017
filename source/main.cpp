@@ -277,6 +277,17 @@ int update_thread_proc( void* user_data)
     audiosys_music_loop_set( context->audiosys, AUDIOSYS_LOOP_ON );
 	thread_mutex_unlock( &context->audio_mutex );		
 	
+	assetsys_file( assetsys, "/data/pickup.ogg", &file );
+	size = assetsys_file_size( assetsys, file );
+	data = (char*) malloc( (size_t) size );
+	assetsys_file_load( assetsys, file, data );
+	audiosys_audio_source_t pickup = ogg_load( data, size );
+	free( data );	
+	thread_mutex_lock( &context->audio_mutex );
+    audiosys_sound_play( context->audiosys, pickup, 0.0f, 0.0f );
+	thread_mutex_unlock( &context->audio_mutex );		
+	
+	
 	// obj test
 	assetsys_file( assetsys, "/data/suzanne.obj", &file );
 	size = assetsys_file_size( assetsys, file );
