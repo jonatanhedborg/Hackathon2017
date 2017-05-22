@@ -19,8 +19,11 @@ bool load_model(assetsys_t* assetsys, char* name, model_3d* loaded_model)
 	assetsys_file_t file;
 	assetsys_file(assetsys, name, &file);
 	int size = assetsys_file_size(assetsys, file);
-	char* data = (char*)malloc((size_t)size);
+	char* data = (char*)malloc((size_t)size+1);
 	assetsys_file_load(assetsys, file, data);
+
+	size += 1;
+	data[size-1] = '\n';
 
 
 	tinyobj_attrib_t attrib;
