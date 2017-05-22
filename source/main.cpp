@@ -37,6 +37,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "model3d.hpp"
+
 
 // additional vecmath helpers
 namespace vecmath { 
@@ -293,20 +295,10 @@ int update_thread_proc( void* user_data)
 	size = assetsys_file_size( assetsys, file );
 	data = (char*) malloc( (size_t) size );
 	assetsys_file_load( assetsys, file, data );
-	tinyobj_attrib_t attrib;
-	tinyobj_attrib_init( &attrib );
-	tinyobj_shape_t* shapes;
-	size_t num_shapes;
-	tinyobj_material_t* materials;
-    size_t num_materials;
-	int res = tinyobj_parse_obj( &attrib, &shapes, &num_shapes, &materials, &num_materials, (char const*) data, (size_t) size, 0);
-	if( res == TINYOBJ_SUCCESS )
-		{
-		tinyobj_attrib_free( &attrib);
-		tinyobj_shapes_free( shapes, num_shapes);
-		tinyobj_materials_free( materials, num_materials );
-		}	
-	free( data );	
+
+	model_3d suzanne;
+	load_model(data, size, &suzanne);
+	free( data );
 
 	//	screens/graphics
 	static uint8_t screen[ 320 * 200 ];
