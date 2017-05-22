@@ -39,6 +39,7 @@ struct batch_renderer
 				}
 			++poly;
 			}
+		polygons.clear();
 		}
 		
 	struct polygon_t
