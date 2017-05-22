@@ -61,6 +61,13 @@ struct gamestate_common
 
 		return APP_KEY_INVALID;
 	}
+
+	void signal_exit()
+	{
+		thread_mutex_lock(&update_context->signal_mutex);
+		update_context->state_signaled_exit = 1;
+		thread_mutex_unlock(&update_context->signal_mutex);
+	}
 	
 	objrepo::object_repo* objrepo;
 	rnd_pcg_t pcg;

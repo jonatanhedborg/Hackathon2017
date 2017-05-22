@@ -261,6 +261,8 @@ struct update_thread_context_t
 	uint8_t* screen;
 	thread_mutex_t screen_mutex;
 	thread_mutex_t input_mutex;
+	thread_mutex_t signal_mutex;
+	int state_signaled_exit;
 };	
 
 // gamestates
@@ -485,12 +487,14 @@ int app_proc( app_t* app, void* user_data )
 	// update thread
     update_thread_context_t update_thread_context;
     update_thread_context.exit_flag = 0;
+	update_thread_context.state_signaled_exit = 0;
     update_thread_context.app = app;
 	update_thread_context.audiosys = audiosys;
 	thread_mutex_init( &update_thread_context.audio_mutex );
     update_thread_context.screen = screen;
 	thread_mutex_init( &update_thread_context.screen_mutex );
 	thread_mutex_init(&update_thread_context.input_mutex);
+	thread_mutex_init(&update_thread_context.signal_mutex);
     thread_ptr_t update_thread = thread_create( update_thread_proc, &update_thread_context, NULL, THREAD_STACK_SIZE_DEFAULT );
 
 	materials_t materials;
@@ -513,7 +517,17 @@ int app_proc( app_t* app, void* user_data )
 		// update audio
 		thread_mutex_lock( &update_thread_context.audio_mutex );
         audiosys_update( audiosys );
-		thread_mutex_unlock( &update_thread_context.audio_mutex );		
+		thread_mutex_unlock( &update_thread_context.audio_mutex );
+
+		//check for state signal exit
+		thread_mutex_lock(&update_thread_context.signal_mutex);
+		if (update_thread_context.state_signaled_exit)
+		{
+			thread_mutex_unlock(&update_thread_context.signal_mutex);
+			break;
+		}
+		else
+			thread_mutex_unlock(&update_thread_context.signal_mutex);
 		}
 
 	// cleanup
@@ -528,6 +542,8 @@ int app_proc( app_t* app, void* user_data )
 
 	thread_mutex_term( &update_thread_context.audio_mutex );
 	thread_mutex_term( &update_thread_context.screen_mutex );
+	thread_mutex_term(&update_thread_context.input_mutex);
+	thread_mutex_term(&update_thread_context.signal_mutex);
 
     audiosys_destroy( audiosys );
 	return 0;

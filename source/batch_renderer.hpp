@@ -9,22 +9,28 @@ struct batch_renderer
 	
 	void submit( int material_fill, int material_line, float4x4 xform, int count, float3* vertices )
 		{
-		polygon_t& poly = polygons.add();
+		polygon_t poly;
 		poly.material_fill = material_fill;
 		poly.material_line = material_line;
 		poly.count = count;
 		float z = 0.0f;
+		float4 verts[3];
 		for( int i = 0; i < count; ++i )
 			{
 			float4 v = transform(vertices[i], xform);
 			v /= v.w;
-			// poly.verts[ i * 2 + 0 ] = (int) (v.x*scr->screen->width) + scr->screen->width / 2;
-			// poly.verts[ i * 2 + 1 ] = (int) -(v.y*scr->screen->height) + scr->screen->height / 2;
+			if( i < 3 ) verts[ i ] = v;
 			poly.verts[ i * 2 + 0 ] = (int) (v.x) + scr->screen->width / 2;
 			poly.verts[ i * 2 + 1 ] = (int) (v.y) + scr->screen->height / 2;
 			z += v.z;
 			}
 		poly.z = z / (float) count;
+		
+		float3 u = normalize( verts[ 1 ].xyz() - verts[ 0 ].xyz() );
+		float3 v = normalize( verts[ 2 ].xyz() - verts[ 0 ].xyz() );
+		float3 n = normalize( cross( u, v ) );
+		if( n.z < 0.0f )
+			polygons.add( poly );
 		}
 		
 	void render()
