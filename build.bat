@@ -36,8 +36,8 @@ for %%i in ("%CDIR%") do set "PARENTFOLDERNAME=%%~nxi"
 rem Parse command line options
 set package=
 set clean=
-set x86=
-set x64=true
+set x86=true
+set x64=
 set config=release
 set code=true
 set data=%build_data%
@@ -154,7 +154,7 @@ rem C4710: 'function' : function not inlined
 rem C4711: function 'function' selected for inline expansion
 rem C4738: storing 32-bit float result in memory, possible loss of performance
 rem C4820: 'bytes' bytes padding added after construct 'member_name'
-set WARNING_FLAGS=/Wall /wd 4514 /wd 4710 /wd 4711 /wd 4738 /wd 4820 /wd 4626 /wd 5027 /WX
+set WARNING_FLAGS=/Wall /wd 4514 /wd 4710 /wd 4711 /wd 4738 /wd 4820 /wd 4626 /wd 5027 /wd 4365 /wd 4668 /wd 4987 /wd 4018 /WX
 
 if %config%==release (
 	if not exist .build_temp\seticon\seticon.exe (
@@ -178,7 +178,7 @@ if defined code (
 	)
 	if defined x64 (
 		setlocal
-		call :vsvars32 amd64
+		call :vsvars32 
 		cl source\*.cpp /Fe".runtime\%EXE_NAME%_x64" /Fo.build_temp\%config%\x64\ /nologo %CONFIG_FLAGS% /Zc:forScope %WARNING_FLAGS% %extraflags% /link %LINKER_FLAGS%%LINKER_VER% /MACHINE:X64
 		endlocal
 		if %config%==release .build_temp\seticon\seticon.exe ".runtime\%EXE_NAME%_x64.exe" "%PARENTFOLDERNAME%.ico" 
@@ -213,7 +213,7 @@ goto :eof
 
 
 :initvs
-	call "%*vsvars32.bat" 1>nul
+	call "%*VsDevCmd.bat" 1>nul
 	if not errorlevel 1 goto :eof
 	popd
 	if defined launched_from_explorer pause	
@@ -222,20 +222,20 @@ goto :eof
 	
 
 :xp_toolset
-	set INCLUDE=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Include;%INCLUDE%
-	set PATH=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Bin;%PATH%
-	if defined x86 set LIB=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Lib;%LIB%
-	if defined x64 set LIB=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Lib\x64;%LIB%
-	if defined x86 set LINKER_VER=,5.01
-	if defined x64 set LINKER_VER=,5.02
-	set CL=/D_USING_V%*_SDK71_;%CL%
+	rem set INCLUDE=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Include;%INCLUDE%
+	rem set PATH=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Bin;%PATH%
+	rem if defined x86 set LIB=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Lib;%LIB%
+	rem if defined x64 set LIB=%ProgramFiles(x86)%\Microsoft SDKs\Windows\7.1A\Lib\x64;%LIB%
+	rem if defined x86 set LINKER_VER=,5.01
+	rem if defined x64 set LINKER_VER=,5.02
+	rem set CL=/D_USING_V%*_SDK71_;%CL%
 	goto :eof
 	
 	
 :vsvars32
 	set VCINSTALLDIR=
 	set LINKER_VER=
-	if defined VS160COMNTOOLS call :initvs %VS150COMNTOOLS% & call :xp_toolset 160	
+	if defined VS160COMNTOOLS call :initvs %VS160COMNTOOLS% & call :xp_toolset 160	
 	if defined VCINSTALLDIR goto :vsvars32_done                                
 	if defined VS150COMNTOOLS call :initvs %VS150COMNTOOLS% & call :xp_toolset 150	
 	if defined VCINSTALLDIR goto :vsvars32_done                                
@@ -260,7 +260,7 @@ goto :eof
 	if defined VS60COMNTOOLS call :initvs %VS60COMNTOOLS%
 	if defined VCINSTALLDIR goto :vsvars32_done
 	:vsvars32_done
-		call "%VCINSTALLDIR%vcvarsall.bat" %1
+		call "%VCINSTALLDIR%..\Common\Tools\VsDevCmd.bat" %1
 		if defined VCINSTALLDIR goto :eof
 		echo Visual Studio is not installed. Aborting.
 		popd
