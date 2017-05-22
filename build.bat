@@ -235,6 +235,8 @@ goto :eof
 :vsvars32
 	set VCINSTALLDIR=
 	set LINKER_VER=
+	if defined VS160COMNTOOLS call :initvs %VS150COMNTOOLS% & call :xp_toolset 160	
+	if defined VCINSTALLDIR goto :vsvars32_done                                
 	if defined VS150COMNTOOLS call :initvs %VS150COMNTOOLS% & call :xp_toolset 150	
 	if defined VCINSTALLDIR goto :vsvars32_done                                
 	if defined VS140COMNTOOLS call :initvs %VS140COMNTOOLS% & call :xp_toolset 140
