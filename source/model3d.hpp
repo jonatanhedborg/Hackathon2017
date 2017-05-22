@@ -3,11 +3,12 @@
 #include "libs/assetsys.h"
 #include "libs/vecmath.hpp"
 
+using namespace vecmath;
 
 struct model_3d
 {
-	array_ns::array<vecmath::float3> vertices;
-	array_ns::array<int> vertices_per_shape;
+	array_ns::array<float3> vertices;
+	array_ns::array<int> vertices_per_polygon;
 };
 
 bool load_model(assetsys_t* assetsys, char* name, model_3d* loaded_model)
@@ -32,10 +33,27 @@ bool load_model(assetsys_t* assetsys, char* name, model_3d* loaded_model)
 
 	if (res == TINYOBJ_SUCCESS)
 	{
-		for (int i = 0; i < attrib.num_vertices / 3; ++i)
-			loaded_model->vertices.add( vecmath::float3( attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2] ) );
-		for (int i = 0; i < attrib.num_faces; ++i)
-			loaded_model->vertices_per_shape.add(attrib.face_num_verts[i]);
+		int face_offset = 0;
+		for (int i = 0; i < attrib.num_face_num_verts; ++i) {
+			int vertex_count = attrib.face_num_verts[i];
+			for (int j = 0; j < vertex_count; ++j) {
+				int vertex_index = attrib.faces[face_offset++].v_idx;
+				vertex_index *= 3;
+			
+				float x = attrib.vertices[vertex_index];
+				float y = attrib.vertices[vertex_index+1];
+				float z = attrib.vertices[vertex_index+2];
+				float3 vertex(x, y, z);
+
+				loaded_model->vertices.add(vertex);
+			}
+			loaded_model->vertices_per_polygon.add(vertex_count);
+		}
+
+		// for (int i = 0; i < attrib.num_vertices / 3; ++i)
+		// 	loaded_model->vertices.add( vecmath::float3( attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2] ) );
+		// for (int i = 0; i < attrib.num_faces; ++i)
+		// 	loaded_model->vertices_per_shape.add(attrib.face_num_verts[i]);
 
 		tinyobj_attrib_free(&attrib);
 		tinyobj_shapes_free(shapes, num_shapes);

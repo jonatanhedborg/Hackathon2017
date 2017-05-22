@@ -1,3 +1,5 @@
+using namespace vecmath;
+
 struct batch_renderer
 	{
 	batch_renderer( graph_ns::graph<pal_screen, uint8_t>* screen ):
@@ -5,7 +7,7 @@ struct batch_renderer
 		{		
 		}
 	
-	void submit( int material_fill, int material_line, float4x4 transform, int count, float3* vertices )
+	void submit( int material_fill, int material_line, float4x4 xform, int count, float3* vertices )
 		{
 		polygon_t& poly = polygons.add();
 		poly.material_fill = material_fill;
@@ -14,9 +16,12 @@ struct batch_renderer
 		float z = 0.0f;
 		for( int i = 0; i < count; ++i )
 			{
-			float3 v = transform_coord( vertices[ i ], transform );
-			poly.verts[ i * 2 + 0 ] = (int) v.x;
-			poly.verts[ i * 2 + 1 ] = (int) v.y;
+			float4 v = transform(vertices[i], xform);
+			v /= v.w;
+			// poly.verts[ i * 2 + 0 ] = (int) (v.x*scr->screen->width) + scr->screen->width / 2;
+			// poly.verts[ i * 2 + 1 ] = (int) -(v.y*scr->screen->height) + scr->screen->height / 2;
+			poly.verts[ i * 2 + 0 ] = (int) (v.x) + scr->screen->width / 2;
+			poly.verts[ i * 2 + 1 ] = (int) (v.y) + scr->screen->height / 2;
 			z += v.z;
 			}
 		poly.z = z / (float) count;
