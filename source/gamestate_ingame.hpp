@@ -59,6 +59,8 @@ struct gamestate_ingame : gamestate_common {
 		}
 
 		renderer.render();
+		int index = rand(game_resources::SOUNDS_LASER1, game_resources::SOUNDS_LASER6);
+		if (get_input() == APP_KEY_SPACE) play_sound(&resources->sounds[index]);
 
 		update_fps();
 	}

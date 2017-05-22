@@ -50,6 +50,17 @@ struct gamestate_common
 		audiosys_music_loop_set(update_context->audiosys, AUDIOSYS_LOOP_ON);
 		thread_mutex_unlock(&update_context->audio_mutex);
 	}
+
+	app_key_t get_input()
+	{
+		thread_mutex_lock(&update_context->input_mutex);
+		app_input_t input = app_input(update_context->app);
+		thread_mutex_unlock(&update_context->input_mutex);
+		for (int i = 0; i < input.count; ++i)
+			if (input.events[i].type == APP_INPUT_KEY_DOWN) return input.events->data.key;
+
+		return APP_KEY_INVALID;
+	}
 	
 	objrepo::object_repo* objrepo;
 	rnd_pcg_t pcg;

@@ -208,6 +208,12 @@ struct game_resources
 	{
 		SOUNDS_MUSIC,
 		SOUNDS_PICKUP,
+		SOUNDS_LASER1,
+		SOUNDS_LASER2,
+		SOUNDS_LASER3,
+		SOUNDS_LASER4,
+		SOUNDS_LASER5,
+		SOUNDS_LASER6,
 		SOUNDS_COUNT,
 	};
 
@@ -223,6 +229,13 @@ void load_resources(game_resources* resources)
 	//sounds
 	if(!load_sound(assetsys, "/data/music.ogg", &resources->sounds[game_resources::SOUNDS_MUSIC])) assert(false);
 	if(!load_sound(assetsys, "/data/pickup.ogg", &resources->sounds[game_resources::SOUNDS_PICKUP])) assert(false);
+	if (!load_sound(assetsys, "/data/laser1.ogg", &resources->sounds[game_resources::SOUNDS_LASER1])) assert(false);
+	if (!load_sound(assetsys, "/data/laser2.ogg", &resources->sounds[game_resources::SOUNDS_LASER2])) assert(false);
+	if (!load_sound(assetsys, "/data/laser3.ogg", &resources->sounds[game_resources::SOUNDS_LASER3])) assert(false);
+	if (!load_sound(assetsys, "/data/laser4.ogg", &resources->sounds[game_resources::SOUNDS_LASER4])) assert(false);
+	if (!load_sound(assetsys, "/data/laser5.ogg", &resources->sounds[game_resources::SOUNDS_LASER5])) assert(false);
+	if (!load_sound(assetsys, "/data/laser6.ogg", &resources->sounds[game_resources::SOUNDS_LASER6])) assert(false);
+
 	//models
 	if(!load_model(assetsys, "/data/suzanne.obj", &resources->models[game_resources::MODEL_SUZANNE])) assert(false);
 	if(!load_model(assetsys, "/data/standard_wall_left.obj", &resources->models[game_resources::MODEL_LEFT_WALL])) assert(false);
@@ -247,6 +260,7 @@ struct update_thread_context_t
 	thread_mutex_t audio_mutex;
 	uint8_t* screen;
 	thread_mutex_t screen_mutex;
+	thread_mutex_t input_mutex;
 };	
 
 // gamestates
@@ -476,6 +490,7 @@ int app_proc( app_t* app, void* user_data )
 	thread_mutex_init( &update_thread_context.audio_mutex );
     update_thread_context.screen = screen;
 	thread_mutex_init( &update_thread_context.screen_mutex );
+	thread_mutex_init(&update_thread_context.input_mutex);
     thread_ptr_t update_thread = thread_create( update_thread_proc, &update_thread_context, NULL, THREAD_STACK_SIZE_DEFAULT );
 
 	materials_t materials;
