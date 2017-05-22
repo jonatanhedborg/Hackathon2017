@@ -221,12 +221,12 @@ void load_resources(game_resources* resources)
 	assetsys_t* assetsys = assetsys_create(0);
 	assetsys_mount(assetsys, "./data", "/data");
 	//sounds
-	assert(load_sound(assetsys, "/data/music.ogg", &resources->sounds[game_resources::SOUNDS_MUSIC]));
-	assert(load_sound(assetsys, "/data/pickup.ogg", &resources->sounds[game_resources::SOUNDS_PICKUP]));
+	if(!load_sound(assetsys, "/data/music.ogg", &resources->sounds[game_resources::SOUNDS_MUSIC])) assert(false);
+	if(!load_sound(assetsys, "/data/pickup.ogg", &resources->sounds[game_resources::SOUNDS_PICKUP])) assert(false);
 	//models
-	assert(load_model(assetsys, "/data/suzanne.obj", &resources->models[game_resources::MODEL_SUZANNE]));
-	assert(load_model(assetsys, "/data/standard_wall_left.obj", &resources->models[game_resources::MODEL_LEFT_WALL]));
-	assert(load_model(assetsys, "/data/shaped_wall_right_1.obj", &resources->models[game_resources::MODEL_RIGHT_WALL1]));
+	if(!load_model(assetsys, "/data/suzanne.obj", &resources->models[game_resources::MODEL_SUZANNE])) assert(false);
+	if(!load_model(assetsys, "/data/standard_wall_left.obj", &resources->models[game_resources::MODEL_LEFT_WALL])) assert(false);
+	if(!load_model(assetsys, "/data/shaped_wall_right_1.obj", &resources->models[game_resources::MODEL_RIGHT_WALL1])) assert(false);
 
 	assetsys_destroy(assetsys);
 }
