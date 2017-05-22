@@ -294,14 +294,8 @@ int update_thread_proc( void* user_data)
 	
 	
 	// obj test
-	assetsys_file( assetsys, "/data/suzanne.obj", &file );
-	size = assetsys_file_size( assetsys, file );
-	data = (char*) malloc( (size_t) size );
-	assetsys_file_load( assetsys, file, data );
-
 	model_3d suzanne;
-	load_model(data, size, &suzanne);
-	free( data );
+	load_model(assetsys, "/data/suzanne.obj", &suzanne);
 
 	//	screens/graphics
 	static uint8_t screen[ 320 * 200 ];
