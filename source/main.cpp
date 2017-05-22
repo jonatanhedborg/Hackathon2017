@@ -201,6 +201,8 @@ struct game_resources
 	{
 		MODEL_SUZANNE,
 		MODEL_LEFT_WALL,
+		MODEL_RIGHT_WALL,
+		MODEL_FLOOR,
 		MODEL_RIGHT_WALL1,
 		MODEL_COUNT,
 	};
@@ -239,6 +241,8 @@ void load_resources(game_resources* resources)
 	//models
 	if(!load_model(assetsys, "/data/suzanne.obj", &resources->models[game_resources::MODEL_SUZANNE])) assert(false);
 	if(!load_model(assetsys, "/data/standard_wall_left.obj", &resources->models[game_resources::MODEL_LEFT_WALL])) assert(false);
+	if(!load_model(assetsys, "/data/standard_wall_right.obj", &resources->models[game_resources::MODEL_RIGHT_WALL])) assert(false);
+	if(!load_model(assetsys, "/data/standard_floor.obj", &resources->models[game_resources::MODEL_FLOOR])) assert(false);
 	if(!load_model(assetsys, "/data/shaped_wall_right_1.obj", &resources->models[game_resources::MODEL_RIGHT_WALL1])) assert(false);
 
 	assetsys_destroy(assetsys);
