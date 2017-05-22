@@ -19,6 +19,9 @@ bool load_model(assetsys_t* assetsys, char* name, model_3d* loaded_model)
 	assetsys_file_t file;
 	assetsys_file(assetsys, name, &file);
 	int size = assetsys_file_size(assetsys, file);
+	if (size <= 0) {
+		return false;
+	}
 	char* data = (char*)malloc((size_t)size+1);
 	assetsys_file_load(assetsys, file, data);
 
