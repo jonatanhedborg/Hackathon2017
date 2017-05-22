@@ -24,14 +24,19 @@ struct batch_renderer
 		
 	void render()
 		{
-		sort_ns::sort( polygons.data(), polygons.count() );
-		polygon_t* poly;
-		for( int i = 0; i < polygons.count(); ++i )
+		int count = polygons.count();
+		polygon_t* poly = polygons.data();
+		sort_ns::sort( poly, count );
+		for( int i = 0; i < count; ++i )
 			{
 			int* v = poly->verts;
 			scr->polygon_fill<8>( v, poly->count, (uint8_t) poly->material_fill );
-			for( int j = 0; j < poly->count; ++j )
-				scr->line( v[ j + 0 ], v[ j + 1 ], v[ j + 2 ], v[ j + 3 ], (uint8_t) poly->material_line );
+			for( int j = 0; j < poly->count + 1; ++j )
+				{
+				int n = ( j % poly->count ) * 2;
+				int m = ( ( j + 1 ) % poly->count ) * 2;
+				scr->line( v[ n + 0 ], v[ n + 1 ], v[ m + 0 ], v[ m + 1 ], (uint8_t) poly->material_line );
+				}
 			++poly;
 			}
 		}
