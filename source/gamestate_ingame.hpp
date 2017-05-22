@@ -26,16 +26,16 @@ struct gamestate_ingame : gamestate_common {
 		camera.position = float3(0, 2, 0);
 		camera.rotation = float3(0, 0, 0);
 
-		suzanne_instance = {&resources->models[game_resources::MODEL_SUZANNE], float3(0, 0, 5), float3(0, 0, 0), 64, 128};
-		wall_left_instance = { &resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, 5), float3(0, 0, 0), 64, 128 };
+		suzanne_instance = {&resources->models[game_resources::MODEL_SUZANNE], float3(0, 0, 5), float3(0, 0, 0), MATERIAL_BROWN, MATERIAL_YELLOW};
+		wall_left_instance = { &resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, 5), float3(0, 0, 0), MATERIAL_GREEN, MATERIAL_LIGHT_GREEN };
 		models.add(&suzanne_instance);
 		models.add(&wall_left_instance);
 	}
 
 	void update( object_repo* )	{
 
-		// suzanne_instance.rotation.y += 0.01f;
-		// suzanne_instance.position.z -= 0.5f;
+		 suzanne_instance.rotation.y += 0.01f;
+		 suzanne_instance.position.z -= 0.5f;
 
 		float4x4 view_matrix_tmp = rotation_yaw_pitch_roll(camera.rotation.y, camera.rotation.x, camera.rotation.z);
 		view_matrix_tmp = mul(view_matrix_tmp, translation(camera.position.x, camera.position.y, camera.position.z));
