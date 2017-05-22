@@ -26,7 +26,7 @@ struct gamestate_ingame : gamestate_common {
 		camera.position = float3(0, 2, 0);
 		camera.rotation = float3(0, 0, 0);
 
-		for(int i = 0; i < 2; ++i) {
+		for(int i = 0; i < 3; ++i) {
 			generate_segment();
 		}
 	}
@@ -35,12 +35,12 @@ struct gamestate_ingame : gamestate_common {
 		models.add({&resources->models[game_resources::MODEL_RIGHT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, MATERIAL_LIGHT_GREEN});
 		models.add({&resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, MATERIAL_LIGHT_GREEN});
 		models.add({&resources->models[game_resources::MODEL_FLOOR], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, MATERIAL_LIGHT_GREEN});		
-		next_segment_position += 5.0f;
+		next_segment_position -= 5.0f;
 	}
 
 	void clean_up_segments() {
 		for (int i = 0; i < models.count(); ++i) {
-			if (models[i].position.z < camera.position.z - 5) {
+			if (models[i].position.z > camera.position.z ) {
 				models.remove(i);
 				--i;
 			}
@@ -49,20 +49,20 @@ struct gamestate_ingame : gamestate_common {
 
 	void update( object_repo* )	{
 		// Fun stuff
-		if (player_position + 5 > next_segment_position) {
+		if (player_position - 50 < next_segment_position) {
 			generate_segment();
 		}
 
 		clean_up_segments();
 
-		player_position += 0.3f;
+		player_position -= 0.3f;
 
 		camera.position.z = player_position;
 
 		// Drawing
 		float4x4 view_matrix_tmp = rotation_yaw_pitch_roll(camera.rotation.y, camera.rotation.x, camera.rotation.z);
 		view_matrix_tmp = mul(view_matrix_tmp, translation(camera.position.x, camera.position.y, camera.position.z));
-		float4x4 view_matrix;
+		float4x4 view_matrix = view_matrix_tmp;
 		inverse(&view_matrix, 0, view_matrix_tmp);
 		float4x4 view_projection_matrix = mul(view_matrix, projection_matrix);
 

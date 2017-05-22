@@ -109,7 +109,7 @@ APP_U32 palette[ 16 ] =
 	{ 	
 	0x000000, 
 	0xaa0000, 
-	0x00aa00, 
+	0x006000, 
 	0xaaaa00, 
 	0x0000aa, 
 	0xaa00aa, 
@@ -127,11 +127,12 @@ APP_U32 palette[ 16 ] =
 
 struct material_t
 	{
-	int pal_index;
+	int pal_index;	
 	};
 
 enum material_id
 	{
+	MATERIAL_SKY,
 	MATERIAL_BLACK,
 	MATERIAL_BLUE,
 	MATERIAL_GREEN,
@@ -155,6 +156,7 @@ struct materials_t
 	materials_t()
 		{
 		memset( mtls, 0, sizeof( mtls ) );
+		set( MATERIAL_SKY, -1 );
 		set( MATERIAL_BLACK, 0 );
 		set( MATERIAL_BLUE, 1 );
 		set( MATERIAL_GREEN, 2 );
@@ -502,18 +504,56 @@ int app_proc( app_t* app, void* user_data )
     thread_ptr_t update_thread = thread_create( update_thread_proc, &update_thread_context, NULL, THREAD_STACK_SIZE_DEFAULT );
 
 	materials_t materials;
+
+	rnd_pcg_t pcg;
+	rnd_pcg_seed(  &pcg , 0 );		
+
+	struct star_t
+		{
+		float x;
+		float y;
+		float z;
+		} stars[ 256 ];	
 	
+	for( int i = 0; i < sizeof( stars ) / sizeof( *stars ); ++i )
+		{
+		stars[ i ].x = ( rnd_pcg_nextf( &pcg ) - 0.5f ) * 3000.0f;
+		stars[ i ].y = ( rnd_pcg_nextf( &pcg ) - 0.5f ) * 3000.0f;
+		stars[ i ].z = ( rnd_pcg_nextf( &pcg ) + 0.000000001f ) * 15.0f;
+		}
+
 	// main app loop
 	while( app_is_running( app ) )
 		{		
 		app_yield( app );
+		
+		// stars
+		float delta_time = 1.0f / 60.0f;
+		memset( screen_xbgr, 0, sizeof( screen_xbgr ) );
+		for( int i = 0; i < sizeof( stars ) / sizeof( *stars ); ++i )
+			{
+			stars[ i ].z -= 3.0f * delta_time;
+			int x = (int)( stars[ i ].x / stars[ i ].z ) + 160;
+			int y = (int)( stars[ i ].y / stars[ i ].z ) + 100;
+			if( stars[ i ].z <= 0.0f || x < 0 || x >= 320 || y < 0 || y >= 200 )
+				{
+				stars[ i ].x = ( rnd_pcg_nextf( &pcg ) - 0.5f ) * 3000.0f;
+				stars[ i ].y = ( rnd_pcg_nextf( &pcg ) - 0.5f ) * 3000.0f;
+				stars[ i ].z = 15.0f;
+				continue;
+				}
+				
+			int c = (int)( ( 1.0f - ( stars[ i ].z / 15.0f ) ) * 255.0f );
+			if( ( screen_xbgr[ x + y * 320 ] & 0xff ) < c )
+				screen_xbgr[ x + y * 320 ] = (uint32_t)( ( c << 16 ) | ( c << 8 ) | c );
+			}
 
 		// post process and present screen
 		thread_mutex_lock( &update_thread_context.screen_mutex );
 		for( int i = 0; i < 320 * 200; ++i ) 
 			{
 			material_t m = materials[ (material_id) screen[ i ] ];
-			screen_xbgr[ i ] = palette[ m.pal_index ];
+			if( m.pal_index >= 0 ) screen_xbgr[ i ] = palette[ m.pal_index ];
 			}
 		thread_mutex_unlock( &update_thread_context.screen_mutex );
 		app_present_xbgr32( app, screen_xbgr, 320, 200, 0xffffff, 0x000000 );

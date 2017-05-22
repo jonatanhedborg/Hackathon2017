@@ -18,10 +18,11 @@ struct batch_renderer
 		for( int i = 0; i < count; ++i )
 			{
 			float4 v = transform(vertices[i], xform);
+			if( v.z <= 0.0f ) return;
 			v /= v.w;
 			if( i < 3 ) verts[ i ] = v;
 			poly.verts[ i * 2 + 0 ] = (int) (v.x) + scr->screen->width / 2;
-			poly.verts[ i * 2 + 1 ] = (int) (v.y) + scr->screen->height / 2;
+			poly.verts[ i * 2 + 1 ] = -(int) (v.y) + scr->screen->height / 2;
 			z += v.z;
 			}
 		poly.z = z / (float) count;
@@ -29,7 +30,7 @@ struct batch_renderer
 		float3 u = normalize( verts[ 1 ].xyz() - verts[ 0 ].xyz() );
 		float3 v = normalize( verts[ 2 ].xyz() - verts[ 0 ].xyz() );
 		float3 n = normalize( cross( u, v ) );
-		if( n.z < 0.0f )
+		//if( n.z < 0.0f )
 			polygons.add( poly );
 		}
 		
