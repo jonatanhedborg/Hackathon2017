@@ -17,8 +17,6 @@ struct gamestate_ingame : gamestate_common {
 	batch_renderer renderer;
 	float4x4 projection_matrix;
 	camera_t camera;
-
-	model_3d suzanne_model;
 	model_instance_t suzanne_instance;
 
 	gamestate_ingame( object_repo* ctx ) : gamestate_common( ctx ), renderer(graph) {

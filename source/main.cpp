@@ -233,6 +233,18 @@ void free_resources( game_resources* resources )
 		free_sound(&resources->sounds[i]);
 }
 
+// update thread	
+
+struct update_thread_context_t
+{
+	int exit_flag;
+	app_t* app;
+	audiosys_t* audiosys;
+	thread_mutex_t audio_mutex;
+	uint8_t* screen;
+	thread_mutex_t screen_mutex;
+};	
+
 // gamestates
 using namespace vecmath;
 using objrepo::object_repo;
@@ -292,34 +304,6 @@ app_display_t* app_current_display( app_t* app )
     return 0;
     }
 
-
-// update thread	
-
-struct update_thread_context_t
-    {
-    int exit_flag;
-    app_t* app;
-	audiosys_t* audiosys;
-	thread_mutex_t audio_mutex;
-	uint8_t* screen;
-	thread_mutex_t screen_mutex;
-    };
-
-
-void play_sound(update_thread_context_t* context, audiosys_audio_source_t* source)
-{
-	thread_mutex_lock(&context->audio_mutex);
-	audiosys_sound_play(context->audiosys, *source, 0.0f, 0.0f);
-	thread_mutex_unlock(&context->audio_mutex);
-}
-
-void play_music(update_thread_context_t* context, audiosys_audio_source_t* source)
-{
-	thread_mutex_lock(&context->audio_mutex);
-	audiosys_music_play(context->audiosys, *source, 0.0f);
-	audiosys_music_loop_set(context->audiosys, AUDIOSYS_LOOP_ON);
-	thread_mutex_unlock(&context->audio_mutex);
-}
 
 int update_thread_proc( void* user_data)
     {
@@ -413,6 +397,7 @@ int update_thread_proc( void* user_data)
 	objrepo.add( &gamestates );
 	objrepo.add( frametimer );
 	objrepo.add( &resources );
+	objrepo.add( context );
 
 	// init gamestates
 	init_gamestates( &gamestates );
