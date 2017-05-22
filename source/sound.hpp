@@ -11,6 +11,7 @@ bool load_sound(assetsys_t* assetsys, char* name, audiosys_audio_source_t* loade
 	assetsys_file_t file;
 	assetsys_file(assetsys, name, &file);
 	int size = assetsys_file_size(assetsys, file);
+	if (size <= 0) return false;
 	char* data = (char*)malloc((size_t)size);
 	if (!data) return false;
 

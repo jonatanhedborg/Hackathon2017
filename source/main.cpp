@@ -39,6 +39,7 @@
 
 #include "model3d.hpp"
 #include "sound.hpp"
+#include <assert.h>
 
 
 // additional vecmath helpers
@@ -139,6 +140,20 @@ struct game_resources
 	model_3d models[MODEL_COUNT];
 	audiosys_audio_source_t sounds[SOUNDS_COUNT];
 };
+
+void load_resources(game_resources* resources)
+{
+	// Mount current working folder's "data" folder as a virtual "/data" path
+	assetsys_t* assetsys = assetsys_create(0);
+	assetsys_mount(assetsys, "./data", "/data");
+	//sounds
+	assert(load_sound(assetsys, "/data/music.ogg", &resources->sounds[game_resources::SOUNDS_MUSIC]));
+	assert(load_sound(assetsys, "/data/pickup.ogg", &resources->sounds[game_resources::SOUNDS_PICKUP]));
+	//models
+	assert(load_model(assetsys, "/data/suzanne.obj", &resources->models[game_resources::MODEL_SUZANNE]));
+
+	assetsys_destroy(assetsys);
+}
 
 void free_resources( game_resources* resources )
 {
@@ -304,20 +319,8 @@ int update_thread_proc( void* user_data)
 		, &callback_context );
 
 		
-	// Mount current working folder's "data" folder as a virtual "/data" path
 	game_resources resources;
-	assetsys_t* assetsys = assetsys_create( 0 );
-	assetsys_mount( assetsys, "./data", "/data" );
-
-	// sound test
-	load_sound(assetsys, "/data/music.ogg", &resources.sounds[game_resources::SOUNDS_MUSIC] );
-	play_music(context, &resources.sounds[game_resources::SOUNDS_MUSIC]);
-	
-	load_sound(assetsys, "/data/pickup.ogg", &resources.sounds[game_resources::SOUNDS_PICKUP]);
-	play_sound(context, &resources.sounds[game_resources::SOUNDS_PICKUP]);		
-	
-	// obj test
-	load_model(assetsys, "/data/suzanne.obj", &resources.models[game_resources::MODEL_SUZANNE]);
+	load_resources(&resources);
 
 	//	screens/graphics
 	static uint8_t screen[ 320 * 200 ];
@@ -337,7 +340,6 @@ int update_thread_proc( void* user_data)
 	objrepo.add( &tobii );
 	objrepo.add( &gamestates );
 	objrepo.add( frametimer );
-	objrepo.add( assetsys );
 	objrepo.add( &resources );
 
 	// init gamestates
@@ -359,7 +361,6 @@ int update_thread_proc( void* user_data)
 		thread_mutex_unlock( &context->screen_mutex );		
         }
 
-	assetsys_destroy( assetsys );
     frametimer_term( frametimer );
 	free_resources( &resources );
     return 0;
