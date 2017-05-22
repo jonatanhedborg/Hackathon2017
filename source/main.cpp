@@ -38,6 +38,7 @@
 #include <stdio.h>
 
 #include "model3d.hpp"
+#include "sound.hpp"
 
 
 // additional vecmath helpers
@@ -60,7 +61,6 @@ inline float4 transform( float4 v, float4x4 matrix ) { return mul( v, matrix ); 
 
 using namespace array_ns;
 #include "intersection.hpp"
-#include "ogg.hpp"
 
 // screen
 struct pal_screen
@@ -195,6 +195,22 @@ struct update_thread_context_t
 	thread_mutex_t screen_mutex;
     };
 
+
+void play_sound(update_thread_context_t* context, audiosys_audio_source_t* source)
+{
+	thread_mutex_lock(&context->audio_mutex);
+	audiosys_sound_play(context->audiosys, *source, 0.0f, 0.0f);
+	thread_mutex_unlock(&context->audio_mutex);
+}
+
+void play_music(update_thread_context_t* context, audiosys_audio_source_t* source)
+{
+	thread_mutex_lock(&context->audio_mutex);
+	audiosys_music_play(context->audiosys, *source, 0.0f);
+	audiosys_music_loop_set(context->audiosys, AUDIOSYS_LOOP_ON);
+	thread_mutex_unlock(&context->audio_mutex);
+}
+
 int update_thread_proc( void* user_data)
     {
     update_thread_context_t* context = (update_thread_context_t*) user_data;
@@ -267,31 +283,16 @@ int update_thread_proc( void* user_data)
 		
 	// Mount current working folder's "data" folder as a virtual "/data" path
 	assetsys_t* assetsys = assetsys_create( 0 );
-	assetsys_mount( assetsys, "./data", "/data" ); 
+	assetsys_mount( assetsys, "./data", "/data" );
 
 	// sound test
-	assetsys_file_t file;
-	assetsys_file( assetsys, "/data/music.ogg", &file );
-	int size = assetsys_file_size( assetsys, file );
-	char* data = (char*) malloc( (size_t) size );
-	assetsys_file_load( assetsys, file, data );
-	audiosys_audio_source_t source = ogg_load( data, size );
-	free( data );	
-	thread_mutex_lock( &context->audio_mutex );
-    audiosys_music_play( context->audiosys, source, 0.0f );
-    audiosys_music_loop_set( context->audiosys, AUDIOSYS_LOOP_ON );
-	thread_mutex_unlock( &context->audio_mutex );		
+	audiosys_audio_source_t music;
+	load_sound(assetsys, "/data/music.ogg", &music);
+	play_music(context, &music);
 	
-	assetsys_file( assetsys, "/data/pickup.ogg", &file );
-	size = assetsys_file_size( assetsys, file );
-	data = (char*) malloc( (size_t) size );
-	assetsys_file_load( assetsys, file, data );
-	audiosys_audio_source_t pickup = ogg_load( data, size );
-	free( data );	
-	thread_mutex_lock( &context->audio_mutex );
-    audiosys_sound_play( context->audiosys, pickup, 0.0f, 0.0f );
-	thread_mutex_unlock( &context->audio_mutex );		
-	
+	audiosys_audio_source_t pickup;
+	load_sound(assetsys, "/data/pickup.ogg", &pickup);
+	play_sound(context, &pickup);		
 	
 	// obj test
 	model_3d suzanne;
@@ -338,7 +339,7 @@ int update_thread_proc( void* user_data)
 
 	assetsys_destroy( assetsys );
     frametimer_term( frametimer );
-    ogg_free( source );
+	free_sound(&music);
     return 0;
     }
 	
