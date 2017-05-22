@@ -107,10 +107,82 @@ struct pal_screen
 // palette
 APP_U32 palette[ 16 ] = 
 	{ 	
-	0x000000, 0x0000aa, 0x00aa00, 0x00aaaa, 0xaa0000, 0xaa00aa, 0xaa5500, 0xaaaaaa,
-	0x555555, 0x5555ff, 0x55ff55, 0x55ffff, 0xff5555, 0xff55ff, 0xffff55, 0xffffff,
+	0x000000, 
+	0xaa0000, 
+	0x00aa00, 
+	0xaaaa00, 
+	0x0000aa, 
+	0xaa00aa, 
+	0x0055aa, 
+	0xaaaaaa,
+	0x555555, 
+	0xff5555, 
+	0x55ff55, 
+	0xffff55, 
+	0x5555ff, 
+	0xff55ff, 
+	0x55ffff, 
+	0xffffff,
 	};
 
+struct material_t
+	{
+	int pal_index;
+	};
+
+enum material_id
+	{
+	MATERIAL_BLACK,
+	MATERIAL_BLUE,
+	MATERIAL_GREEN,
+	MATERIAL_CYAN,
+	MATERIAL_RED,
+	MATERIAL_MAGENTA,
+	MATERIAL_BROWN,
+	MATERIAL_LIGHT_GRAY,
+	MATERIAL_GRAY,
+	MATERIAL_LIGHT_BLUE,
+	MATERIAL_LIGHT_GREEN,
+	MATERIAL_LIGHT_CYAN,
+	MATERIAL_LIGHT_RED,
+	MATERIAL_LIGHT_MAGENTA,
+	MATERIAL_YELLOW,
+	MATERIAL_WHITE,
+	};
+	
+struct materials_t
+	{
+	materials_t()
+		{
+		memset( mtls, 0, sizeof( mtls ) );
+		set( MATERIAL_BLACK, 0 );
+		set( MATERIAL_BLUE, 1 );
+		set( MATERIAL_GREEN, 2 );
+		set( MATERIAL_CYAN, 3 );
+		set( MATERIAL_RED, 4 );
+		set( MATERIAL_MAGENTA, 5 );
+		set( MATERIAL_BROWN, 6 );
+		set( MATERIAL_LIGHT_GRAY, 7 );
+		set( MATERIAL_GRAY, 8 );
+		set( MATERIAL_LIGHT_BLUE, 9 );
+		set( MATERIAL_LIGHT_GREEN, 10 );
+		set( MATERIAL_LIGHT_CYAN, 11 );
+		set( MATERIAL_LIGHT_RED, 12 );
+		set( MATERIAL_LIGHT_MAGENTA, 13 );
+		set( MATERIAL_YELLOW, 14 );
+		set( MATERIAL_WHITE, 15 );
+		}
+		
+	void set( material_id id, int pal_index )
+		{
+		material_t& m = mtls[ (int) id ];
+		m.pal_index = pal_index;
+		}
+	
+	material_t mtls[ 256 ];
+	
+	material_t operator[]( material_id id ) { return mtls[ (int) id ]; }
+	};	
 	
 // tobii
 struct tobii_user_presence_t { int64_t timestamp_us; tobii_user_presence_status_t status; };
@@ -417,6 +489,8 @@ int app_proc( app_t* app, void* user_data )
 	thread_mutex_init( &update_thread_context.screen_mutex );
     thread_ptr_t update_thread = thread_create( update_thread_proc, &update_thread_context, NULL, THREAD_STACK_SIZE_DEFAULT );
 
+	materials_t materials;
+	
 	// main app loop
 	while( app_is_running( app ) )
 		{		
@@ -426,8 +500,8 @@ int app_proc( app_t* app, void* user_data )
 		thread_mutex_lock( &update_thread_context.screen_mutex );
 		for( int i = 0; i < 320 * 200; ++i ) 
 			{
-			uint32_t c = screen[ i ];
-			screen_xbgr[ i ] = ( c << 16 ) | ( c << 8 ) | c;
+			material_t m = materials[ (material_id) screen[ i ] ];
+			screen_xbgr[ i ] = palette[ m.pal_index ];
 			}
 		thread_mutex_unlock( &update_thread_context.screen_mutex );
 		app_present_xbgr32( app, screen_xbgr, 320, 200, 0xffffff, 0x000000 );
