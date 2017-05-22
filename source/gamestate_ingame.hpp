@@ -18,6 +18,7 @@ struct gamestate_ingame : gamestate_common {
 	float4x4 projection_matrix;
 	camera_t camera;
 	model_instance_t suzanne_instance;
+	model_instance_t wall_left_instance;
 
 	gamestate_ingame( object_repo* ctx ) : gamestate_common( ctx ), renderer(graph) {
 		projection_matrix = perspective_lh((float)pal_scr->width, (float)pal_scr->height, 0.1f, 1000.0f);
@@ -25,9 +26,10 @@ struct gamestate_ingame : gamestate_common {
 		camera.position = float3(0, 2, 0);
 		camera.rotation = float3(0, 0, 0);
 
-		load_model(assetsys, "/data/standard_wall_left.obj", &suzanne_model);
-		suzanne_instance = {&suzanne_model, float3(0, 0, 5), float3(0, 0, 0), 64, 128};
+		suzanne_instance = {&resources->models[game_resources::MODEL_SUZANNE], float3(0, 0, 5), float3(0, 0, 0), 64, 128};
+		wall_left_instance = { &resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, 5), float3(0, 0, 0), 64, 128 };
 		models.add(&suzanne_instance);
+		models.add(&wall_left_instance);
 	}
 
 	void update( object_repo* )	{

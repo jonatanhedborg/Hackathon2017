@@ -200,6 +200,7 @@ struct game_resources
 	enum model_enum
 	{
 		MODEL_SUZANNE,
+		MODEL_LEFT_WALL,
 		MODEL_COUNT,
 	};
 	enum sounds_enum
@@ -223,6 +224,8 @@ void load_resources(game_resources* resources)
 	assert(load_sound(assetsys, "/data/pickup.ogg", &resources->sounds[game_resources::SOUNDS_PICKUP]));
 	//models
 	assert(load_model(assetsys, "/data/suzanne.obj", &resources->models[game_resources::MODEL_SUZANNE]));
+	assert(load_model(assetsys, "/data/standard_wall_left.obj", &resources->models[game_resources::MODEL_LEFT_WALL]));
+
 
 	assetsys_destroy(assetsys);
 }
