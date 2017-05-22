@@ -315,6 +315,7 @@ int update_thread_proc( void* user_data)
 	objrepo.add( &tobii );
 	objrepo.add( &gamestates );
 	objrepo.add( frametimer );
+	objrepo.add( assetsys );
 
 	// init gamestates
 	init_gamestates( &gamestates );
