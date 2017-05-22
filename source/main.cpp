@@ -122,6 +122,29 @@ struct tobii_t
 	tobii_head_pose_t head_pose;
 	};
 
+struct game_resources
+{
+	enum model_enum
+	{
+		MODEL_SUZANNE,
+		MODEL_COUNT,
+	};
+	enum sounds_enum
+	{
+		SOUNDS_MUSIC,
+		SOUNDS_PICKUP,
+		SOUNDS_COUNT,
+	};
+
+	model_3d models[MODEL_COUNT];
+	audiosys_audio_source_t sounds[SOUNDS_COUNT];
+};
+
+void free_resources( game_resources* resources )
+{
+	for (int i = 0; i < game_resources::SOUNDS_COUNT; ++i)
+		free_sound(&resources->sounds[i]);
+}
 
 // gamestates
 using namespace vecmath;
@@ -282,21 +305,19 @@ int update_thread_proc( void* user_data)
 
 		
 	// Mount current working folder's "data" folder as a virtual "/data" path
+	game_resources resources;
 	assetsys_t* assetsys = assetsys_create( 0 );
 	assetsys_mount( assetsys, "./data", "/data" );
 
 	// sound test
-	audiosys_audio_source_t music;
-	load_sound(assetsys, "/data/music.ogg", &music);
-	play_music(context, &music);
+	load_sound(assetsys, "/data/music.ogg", &resources.sounds[game_resources::SOUNDS_MUSIC] );
+	play_music(context, &resources.sounds[game_resources::SOUNDS_MUSIC]);
 	
-	audiosys_audio_source_t pickup;
-	load_sound(assetsys, "/data/pickup.ogg", &pickup);
-	play_sound(context, &pickup);		
+	load_sound(assetsys, "/data/pickup.ogg", &resources.sounds[game_resources::SOUNDS_PICKUP]);
+	play_sound(context, &resources.sounds[game_resources::SOUNDS_PICKUP]);		
 	
 	// obj test
-	model_3d suzanne;
-	load_model(assetsys, "/data/suzanne.obj", &suzanne);
+	load_model(assetsys, "/data/suzanne.obj", &resources.models[game_resources::MODEL_SUZANNE]);
 
 	//	screens/graphics
 	static uint8_t screen[ 320 * 200 ];
@@ -317,6 +338,7 @@ int update_thread_proc( void* user_data)
 	objrepo.add( &gamestates );
 	objrepo.add( frametimer );
 	objrepo.add( assetsys );
+	objrepo.add( &resources );
 
 	// init gamestates
 	init_gamestates( &gamestates );
@@ -339,7 +361,7 @@ int update_thread_proc( void* user_data)
 
 	assetsys_destroy( assetsys );
     frametimer_term( frametimer );
-	free_sound(&music);
+	free_resources( &resources );
     return 0;
     }
 	
