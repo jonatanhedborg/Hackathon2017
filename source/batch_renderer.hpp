@@ -35,7 +35,7 @@ struct batch_renderer
 		for( int i = 0; i < count; ++i )
 			{
 			int* v = poly->verts;
-			scr->polygon_fill<8>( v, poly->count, (uint8_t) poly->material_fill );
+			scr->polygon_fill<64>( v, poly->count, (uint8_t) poly->material_fill );
 			for( int j = 0; j < poly->count + 1; ++j )
 				{
 				int n = ( j % poly->count ) * 2;
@@ -53,7 +53,7 @@ struct batch_renderer
 		int material_fill;
 		int count;
 		float z;
-		int verts[ 16 ];
+		int verts[ 128 ];
 
 		bool operator<( polygon_t const& other ) const
 			{
