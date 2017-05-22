@@ -27,8 +27,7 @@ struct gamestate_ingame : gamestate_common {
 		camera.position = float3(0, 0, 0);
 		camera.rotation = float3(0, 0, 0);
 
-		load_model(assetsys, "/data/suzanne.obj", &suzanne_model);
-		suzanne_instance = {&suzanne_model, float3(0, 0, 300), float3(0, 0, 0), 64, 128};
+		suzanne_instance = {&resources->models[game_resources::MODEL_SUZANNE], float3(0, 0, 300), float3(0, 0, 0), 64, 128};
 		models.add(&suzanne_instance);
 	}
 

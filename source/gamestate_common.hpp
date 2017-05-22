@@ -13,7 +13,7 @@ struct gamestate_common
 		graph = objrepo->get<graph_ns::graph<pal_screen, uint8_t>>();
 		tobii = objrepo->get<tobii_t>();
 		timer = objrepo->get<frametimer_t>();
-		assetsys = objrepo->get<assetsys_t>();
+		resources = objrepo->get<game_resources>();
 		}
 		
 	float randf() { return rnd_pcg_nextf( &pcg ); }
@@ -40,7 +40,7 @@ struct gamestate_common
 	pal_screen* pal_scr;
 	uint8_t* screen;
 	graph_ns::graph<pal_screen, uint8_t>* graph;
-	assetsys_t* assetsys;
+	game_resources* resources;
 	tobii_t* tobii;
 	frametimer_t* timer;
 	int fps_counter;
