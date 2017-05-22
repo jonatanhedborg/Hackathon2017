@@ -58,6 +58,7 @@ inline float3 transform_normal( float3 v, float4x4 matrix ) { return mul( v, flo
 inline float4 transform( float4 v, float4x4 matrix ) { return mul( v, matrix ); }
 } /* namespace vecmath */
 
+using namespace array_ns;
 #include "intersection.hpp"
 #include "ogg.hpp"
 
@@ -99,6 +100,8 @@ struct pal_screen
 
 	};
 
+
+#include "batch_renderer.hpp"
 
 // palette
 APP_U32 palette[ 16 ] = 
