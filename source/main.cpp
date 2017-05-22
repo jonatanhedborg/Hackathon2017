@@ -38,6 +38,7 @@
 #include <stdio.h>
 
 #include "model3d.hpp"
+#include "sound.hpp"
 
 
 // additional vecmath helpers
@@ -60,7 +61,6 @@ inline float4 transform( float4 v, float4x4 matrix ) { return mul( v, matrix ); 
 
 using namespace array_ns;
 #include "intersection.hpp"
-#include "ogg.hpp"
 
 // screen
 struct pal_screen
@@ -122,6 +122,29 @@ struct tobii_t
 	tobii_head_pose_t head_pose;
 	};
 
+struct game_resources
+{
+	enum model_enum
+	{
+		MODEL_SUZANNE,
+		MODEL_COUNT,
+	};
+	enum sounds_enum
+	{
+		SOUNDS_MUSIC,
+		SOUNDS_PICKUP,
+		SOUNDS_COUNT,
+	};
+
+	model_3d models[MODEL_COUNT];
+	audiosys_audio_source_t sounds[SOUNDS_COUNT];
+};
+
+void free_resources( game_resources* resources )
+{
+	for (int i = 0; i < game_resources::SOUNDS_COUNT; ++i)
+		free_sound(&resources->sounds[i]);
+}
 
 // gamestates
 using namespace vecmath;
@@ -195,6 +218,22 @@ struct update_thread_context_t
 	thread_mutex_t screen_mutex;
     };
 
+
+void play_sound(update_thread_context_t* context, audiosys_audio_source_t* source)
+{
+	thread_mutex_lock(&context->audio_mutex);
+	audiosys_sound_play(context->audiosys, *source, 0.0f, 0.0f);
+	thread_mutex_unlock(&context->audio_mutex);
+}
+
+void play_music(update_thread_context_t* context, audiosys_audio_source_t* source)
+{
+	thread_mutex_lock(&context->audio_mutex);
+	audiosys_music_play(context->audiosys, *source, 0.0f);
+	audiosys_music_loop_set(context->audiosys, AUDIOSYS_LOOP_ON);
+	thread_mutex_unlock(&context->audio_mutex);
+}
+
 int update_thread_proc( void* user_data)
     {
     update_thread_context_t* context = (update_thread_context_t*) user_data;
@@ -266,36 +305,19 @@ int update_thread_proc( void* user_data)
 
 		
 	// Mount current working folder's "data" folder as a virtual "/data" path
+	game_resources resources;
 	assetsys_t* assetsys = assetsys_create( 0 );
-	assetsys_mount( assetsys, "./data", "/data" ); 
+	assetsys_mount( assetsys, "./data", "/data" );
 
 	// sound test
-	assetsys_file_t file;
-	assetsys_file( assetsys, "/data/music.ogg", &file );
-	int size = assetsys_file_size( assetsys, file );
-	char* data = (char*) malloc( (size_t) size );
-	assetsys_file_load( assetsys, file, data );
-	audiosys_audio_source_t source = ogg_load( data, size );
-	free( data );	
-	thread_mutex_lock( &context->audio_mutex );
-    audiosys_music_play( context->audiosys, source, 0.0f );
-    audiosys_music_loop_set( context->audiosys, AUDIOSYS_LOOP_ON );
-	thread_mutex_unlock( &context->audio_mutex );		
+	load_sound(assetsys, "/data/music.ogg", &resources.sounds[game_resources::SOUNDS_MUSIC] );
+	play_music(context, &resources.sounds[game_resources::SOUNDS_MUSIC]);
 	
-	assetsys_file( assetsys, "/data/pickup.ogg", &file );
-	size = assetsys_file_size( assetsys, file );
-	data = (char*) malloc( (size_t) size );
-	assetsys_file_load( assetsys, file, data );
-	audiosys_audio_source_t pickup = ogg_load( data, size );
-	free( data );	
-	thread_mutex_lock( &context->audio_mutex );
-    audiosys_sound_play( context->audiosys, pickup, 0.0f, 0.0f );
-	thread_mutex_unlock( &context->audio_mutex );		
-	
+	load_sound(assetsys, "/data/pickup.ogg", &resources.sounds[game_resources::SOUNDS_PICKUP]);
+	play_sound(context, &resources.sounds[game_resources::SOUNDS_PICKUP]);		
 	
 	// obj test
-	model_3d suzanne;
-	load_model(assetsys, "/data/suzanne.obj", &suzanne);
+	load_model(assetsys, "/data/suzanne.obj", &resources.models[game_resources::MODEL_SUZANNE]);
 
 	//	screens/graphics
 	static uint8_t screen[ 320 * 200 ];
@@ -316,6 +338,7 @@ int update_thread_proc( void* user_data)
 	objrepo.add( &gamestates );
 	objrepo.add( frametimer );
 	objrepo.add( assetsys );
+	objrepo.add( &resources );
 
 	// init gamestates
 	init_gamestates( &gamestates );
@@ -338,7 +361,7 @@ int update_thread_proc( void* user_data)
 
 	assetsys_destroy( assetsys );
     frametimer_term( frametimer );
-    ogg_free( source );
+	free_resources( &resources );
     return 0;
     }
 	
