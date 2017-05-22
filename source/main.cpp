@@ -309,15 +309,6 @@ int update_thread_proc( void* user_data)
 	assetsys_t* assetsys = assetsys_create( 0 );
 	assetsys_mount( assetsys, "./data", "/data" );
 
-	// sound test
-	load_sound(assetsys, "/data/music.ogg", &resources.sounds[game_resources::SOUNDS_MUSIC] );
-	play_music(context, &resources.sounds[game_resources::SOUNDS_MUSIC]);
-	
-	load_sound(assetsys, "/data/pickup.ogg", &resources.sounds[game_resources::SOUNDS_PICKUP]);
-	play_sound(context, &resources.sounds[game_resources::SOUNDS_PICKUP]);		
-	
-	// obj test
-	load_model(assetsys, "/data/suzanne.obj", &resources.models[game_resources::MODEL_SUZANNE]);
 
 	//	screens/graphics
 	static uint8_t screen[ 320 * 200 ];
