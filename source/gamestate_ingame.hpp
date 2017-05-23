@@ -50,6 +50,8 @@ struct gamestate_ingame : gamestate_common {
 	float target_rot[3] = { 0.0f, 0.0f, 0.0f };
 	float current_rot[3] = { 0.0f, 0.0f, 0.0f };
 	float velocity_rot[3] = { 0.0f, 0.0f, 0.0f };
+	int score = 0;
+	int level = 1;
 
 	bool init_headpose = false;
 
@@ -167,7 +169,7 @@ struct gamestate_ingame : gamestate_common {
 
 		clean_up_segments();
 
-		player_position -= 0.9f;
+		player_position -= (0.90f * level) ;
 
 		if (tobii->head_pose.position_validity == TOBII_VALIDITY_VALID)
 		{
@@ -261,12 +263,39 @@ render:
 		trench_renderer.render();
 		obstacle_renderer.render();
 		
+		if (score % 1000 == 0 && score != 0) ++level;
+		if ((score % 1000) < 60)
+		{
+			if (level == 1)
+			{
+				char *level_one = "Initiating Level 1.";
+				sysfont_8x8_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - 70, 60, level_one, MATERIAL_WHITE);
+				char *gl = "Good luck.";
+				sysfont_8x8_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - 40, 100, gl, MATERIAL_WHITE);
+
+			}
+			else
+			{
+				char* level_up = "Level up!";
+				sysfont_9x16_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - 40, 60, level_up, MATERIAL_WHITE);
+				char lvl[18];
+				sprintf(lvl, "Level %i.", level);
+				sysfont_8x8_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - 40, 100, lvl, MATERIAL_WHITE);
+			}
+		}
+		char str[16];
+		sprintf(str, "%d", score);
+		sysfont_9x16_u8(pal_scr->screen, pal_scr->width, pal_scr->height, pal_scr->width - 60, 20, str, MATERIAL_LIGHT_GREEN);
+
 		int index = rand(game_resources::SOUNDS_LASER1, game_resources::SOUNDS_LASER6);
 		app_key_t input = get_input();
 		if (input == APP_KEY_SPACE) play_sound(&resources->sounds[index]);
 		else if (input == APP_KEY_ESCAPE) signal_exit();
 
+		++score;
+#ifdef _DEBUG
 		update_fps();
+#endif
 	}
 	
 };
