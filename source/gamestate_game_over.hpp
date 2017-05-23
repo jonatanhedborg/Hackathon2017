@@ -30,7 +30,7 @@ struct gamestate_game_over : gamestate_common
 		models[ 1 ].rotation.z = sin( c ) * 0.1f;
 		models[ 0 ].rotation.x = 1 + cos( c ) * 0.1f;
 		models[ 1 ].rotation.x = 1 + cos( c ) * 0.1f;
-		if( c > 3.0f ) switch_state<gamestate_intro>();
+		if( c > 3.0f ) switch_state<gamestate_delay>();
 		for(int i = 0; i < models.count(); ++i) {
 			float4x4 transformation = translation(0, 0, 0);
 			transformation = mul(transformation, rotation_yaw_pitch_roll(models[i].rotation.y, models[i].rotation.x, models[i].rotation.z));
@@ -42,6 +42,11 @@ struct gamestate_game_over : gamestate_common
 				renderer.submit(models[i].material_fill, models[i].material_line, transformation, models[i].model->vertices_per_polygon[j], polygons);
 				polygons += models[i].model->vertices_per_polygon[j];
 			}
+
+		char str[16];
+		sprintf(str, "%d", global_score);
+		sysfont_9x16_u8(pal_scr->screen, pal_scr->width, pal_scr->height, pal_scr->width / 2 - ( (int)strlen( str ) * 9 )/ 2, 20, str, MATERIAL_WHITE);
+
 		}
 
 

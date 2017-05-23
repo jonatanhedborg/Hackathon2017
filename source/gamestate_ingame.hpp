@@ -24,6 +24,8 @@ struct obstacle_t {
 	float position;
 };
 
+static int global_score = 0;
+
 struct gamestate_ingame : gamestate_common {
 	array<model_instance_t> models;
 	array<obstacle_t> obstacles;
@@ -71,6 +73,11 @@ struct gamestate_ingame : gamestate_common {
 			generate_segment();
 		}
 	}
+
+	~gamestate_ingame()
+		{
+		global_score = score;
+		}
 
 	void add_obstacle(game_resources::model_enum model, material_id background, material_id foreground) {
 		models.add({&resources->models[model], float3(0, 0, next_segment_position), float3(0.0f), background, foreground, OBSTACLE});
@@ -299,28 +306,31 @@ render:
 		obstacle_renderer.render();
 
 		//Draw HUD stuff
-		if ((score % 1000) < 60)
+		if ((score % 1000) < 100)
 		{
 			if (level == 1)
 			{
 				char *level_one = "Initiating Level 1.";
-				sysfont_8x8_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - 70, 60, level_one, MATERIAL_WHITE);
+				sysfont_8x8_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - ((int)strlen(level_one) * 8) / 2, 60, level_one, MATERIAL_WHITE);
 				char *gl = "Good luck.";
-				sysfont_8x8_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - 40, 100, gl, MATERIAL_WHITE);
+				sysfont_8x8_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - ((int)strlen(gl) * 8) / 2, 100, gl, MATERIAL_WHITE);
 
 			}
 			else
 			{
-				char* level_up = "Level up!";
-				sysfont_9x16_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - 40, 60, level_up, MATERIAL_WHITE);
+				if (score % 33 < 16)
+				{
+					char* level_up = "Level up!";
+					sysfont_9x16_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - ((int)strlen(level_up) * 9) / 2, 60, level_up, MATERIAL_WHITE);
+				}
 				char lvl[18];
 				sprintf(lvl, "Level %i.", level);
-				sysfont_8x8_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - 40, 100, lvl, MATERIAL_WHITE);
+				sysfont_8x8_u8(pal_scr->screen, pal_scr->width, pal_scr->height, (pal_scr->width / 2) - ((int)strlen(lvl) * 8) / 2, 100, lvl, MATERIAL_WHITE);
 			}
 		}
 		char str[16];
 		sprintf(str, "%d", score);
-		sysfont_9x16_u8(pal_scr->screen, pal_scr->width, pal_scr->height, pal_scr->width - 60, 20, str, MATERIAL_LIGHT_GREEN);
+		sysfont_9x16_u8(pal_scr->screen, pal_scr->width, pal_scr->height, pal_scr->width / 2 - ( (int)strlen( str ) * 9 )/ 2, 20, str, MATERIAL_WHITE);
 
 		int index = rand(game_resources::SOUNDS_LASER1, game_resources::SOUNDS_LASER6);
 		app_key_t input = get_input();
