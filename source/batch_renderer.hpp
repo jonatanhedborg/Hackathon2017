@@ -21,8 +21,8 @@ struct batch_renderer
 			if( v.z <= 0.1f ) return;
 			v /= v.w;
 			if( i < 3 ) verts[ i ] = v;
-			poly.verts[ i * 2 + 0 ] = (int) (v.x) + scr->screen->width / 2;
-			poly.verts[ i * 2 + 1 ] = -(int) (v.y) + scr->screen->height / 2;
+			poly.verts[ i * 2 + 0 ] = (int) ( v.x + 0.5f )+ scr->screen->width / 2;
+			poly.verts[ i * 2 + 1 ] = -(int)( v.y + 0.5f )+ scr->screen->height / 2;
 			z += v.z;
 			}
 		poly.z = z / (float) count;

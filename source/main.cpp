@@ -96,7 +96,7 @@ struct pal_screen
 
         uint8_t* scr = screen + y * width + x;
         uint8_t* end = scr + len;
-		while( scr < end ) *scr++ = ink;
+		while( scr <= end ) *scr++ = ink;
 		}
 
 	};
@@ -226,6 +226,8 @@ struct game_resources
 		MODEL_OBSTACLE_HOR_CENTER,
 		MODEL_OBSTACLE_BIG_RIGHT,
 		MODEL_OBSTACLE_BIG_LEFT,
+		MODEL_GAME_OVER_BODY,
+		MODEL_GAME_OVER_FACE,
 		MODEL_COUNT,
 	};
 	enum sounds_enum
@@ -281,7 +283,8 @@ void load_resources(game_resources* resources)
 	if(!load_model(assetsys, "/data/obstacle_hor_center.obj", &resources->models[game_resources::MODEL_OBSTACLE_HOR_CENTER])) assert(false);
 	if(!load_model(assetsys, "/data/obstacle_right_big.obj", &resources->models[game_resources::MODEL_OBSTACLE_BIG_RIGHT])) assert(false);
 	if(!load_model(assetsys, "/data/obstacle_left_big.obj", &resources->models[game_resources::MODEL_OBSTACLE_BIG_LEFT])) assert(false);
-
+	if(!load_model(assetsys, "/data/game_over_body.obj", &resources->models[game_resources::MODEL_GAME_OVER_BODY])) assert(false);
+	if(!load_model(assetsys, "/data/game_over_face.obj", &resources->models[game_resources::MODEL_GAME_OVER_FACE])) assert(false);
 	assetsys_destroy(assetsys);
 }
 
