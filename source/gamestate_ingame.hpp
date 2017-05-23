@@ -47,7 +47,7 @@ struct gamestate_ingame : gamestate_common {
 	, obstacle_renderer(graph)
 	, next_segment_position(0)
 	, player_position(0) {
-		projection_matrix = perspective_lh((float)pal_scr->width * 2.0f, (float)pal_scr->height * 2.0f, 0.1f, 1000.0f);
+		projection_matrix = perspective_lh((float)pal_scr->width * 3.0f, (float)pal_scr->height * 3.0f, 0.1f, 1000.0f);
 		camera.position = float3(0, 2, 0);
 		camera.rotation = float3(0, 0, 0);
 
@@ -83,13 +83,13 @@ struct gamestate_ingame : gamestate_common {
 
 	void update( object_repo* )	{
 		// Fun stuff
-		if (player_position - 50 < next_segment_position) {
+		if (player_position - 150 < next_segment_position) {
 			generate_segment();
 		}
 
 		clean_up_segments();
 
-		player_position -= 0.6f;
+		player_position -= 0.9f;
 
 		if (!origin_initialized && tobii->head_pose.position_validity == TOBII_VALIDITY_VALID)
 		{
