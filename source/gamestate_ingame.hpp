@@ -34,6 +34,7 @@ struct gamestate_ingame : gamestate_common {
 	camera_t camera;
 	
 	int hint_count = 60;
+	int gameover_countdown = 120;
 	
 	int obstacle_min_interval = 7;
 	int obstacle_max_interval = 15;
@@ -153,9 +154,17 @@ struct gamestate_ingame : gamestate_common {
 			max.z += o.position;
 
 			if (p.x > min.x && p.y > min.y && p.z > min.z && p.x < max.x && p.y < max.y && p.z < max.z) {
-				switch_state<gamestate_intro>();
+				camera.position.z += 1.0f;
+				play_sound(&resources->sounds[game_resources::SOUNDS_GAME_OVER]);		
+				--gameover_countdown;
 			}
 
+		}
+		if( gameover_countdown < 120 ) 
+		{
+			--gameover_countdown;
+			if( gameover_countdown == 0 ) switch_state<gamestate_game_over>();
+			goto render;
 		}
 
 		clean_up_segments();
@@ -221,7 +230,7 @@ struct gamestate_ingame : gamestate_common {
 		}
 
 		camera.rotation.z = -current_rot[2];
-
+render:
 		// Drawing
 		float4x4 view_matrix_tmp = rotation_yaw_pitch_roll(camera.rotation.y, camera.rotation.x, camera.rotation.z);
 		view_matrix_tmp = mul(view_matrix_tmp, translation(camera.position.x, camera.position.y, camera.position.z));
