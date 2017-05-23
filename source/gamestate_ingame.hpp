@@ -32,6 +32,7 @@ struct gamestate_ingame : gamestate_common {
 	batch_renderer obstacle_renderer;
 	float4x4 projection_matrix;
 	camera_t camera;
+	float3 prev_pos;
 	
 	int hint_count = 60;
 	int gameover_countdown = 120;
@@ -42,7 +43,6 @@ struct gamestate_ingame : gamestate_common {
 	int wall_color = 0;
 	
 	float next_segment_position;
-	float player_position;
 
 	float velocity[3] = { 0.0f, 0.0f, 0.0f };
 	float last_head_pose[3] = { 0.0f, 0.0f, 0.0f };
@@ -62,7 +62,7 @@ struct gamestate_ingame : gamestate_common {
 	, trench_renderer(graph)
 	, obstacle_renderer(graph)
 	, next_segment_position(0)
-	, player_position(0) {
+	, prev_pos(float3(0, 0, 0)) {
 		projection_matrix = perspective_lh((float)pal_scr->width * 3.0f, (float)pal_scr->height * 3.0f, 0.1f, 1000.0f);
 		camera.position = float3(0, 2, 0);
 		camera.rotation = float3(0, 0, 0);
@@ -136,7 +136,7 @@ struct gamestate_ingame : gamestate_common {
 
 	void update(object_repo*) {
 		// Fun stuff
-		if (player_position - 200 < next_segment_position) {
+		if (camera.position.z - 200 < next_segment_position) {
 			generate_segment();
 		}
 		if( hint_count > 0 )
@@ -146,32 +146,12 @@ struct gamestate_ingame : gamestate_common {
 				play_sound(&resources->sounds[game_resources::SOUNDS_AVOID_OBSTACLES]);		
 		}
 
-		for (int i = 0; i < obstacles.count(); ++i) {
-			obstacle_t o = obstacles[i];
-			float3 p = camera.position;
-			float3 min = o.min;
-			min.z += o.position;
-			float3 max = o.max;
-			max.z += o.position;
-
-			if (p.x > min.x && p.y > min.y && p.z > min.z && p.x < max.x && p.y < max.y && p.z < max.z) {
-				stop_music();
-				camera.position.z += 1.0f;
-				play_sound(&resources->sounds[game_resources::SOUNDS_GAME_OVER]);		
-				--gameover_countdown;
-			}
-
-		}
 		if( gameover_countdown < 120 ) 
 		{
 			--gameover_countdown;
 			if( gameover_countdown == 0 ) switch_state<gamestate_game_over>();
 			goto render;
 		}
-
-		clean_up_segments();
-
-		player_position -= player_velocity;
 
 		if (tobii->head_pose.position_validity == TOBII_VALIDITY_VALID)
 		{
@@ -205,10 +185,12 @@ struct gamestate_ingame : gamestate_common {
 		velocity_rot[2] += (target_rot[2] - current_rot[2]) * 0.2f;
 		current_rot[2] += velocity_rot[2] * 0.1f;
 
+		prev_pos = camera.position;
+
 		float delta = get_delta_time();
 		camera.position.x += velocity[0] * delta * 1.8f;
 		camera.position.y += velocity[1] * delta * 2.4f;
-		camera.position.z = player_position;
+		camera.position.z -= player_velocity;
 
 		if (camera.position.x > 1.85f)
 		{
@@ -238,6 +220,51 @@ struct gamestate_ingame : gamestate_common {
 			++level;
 			player_velocity *= 1.25f;
 		}
+
+
+		clean_up_segments();
+
+		bool collided = false;
+		for (int i = 0; i < obstacles.count(); ++i) {
+			obstacle_t o = obstacles[i];
+			float3 p = camera.position;
+			float3 min = o.min;
+			min.z += o.position;
+			float3 max = o.max;
+			max.z += o.position;
+
+			float3 ray_dir = p - prev_pos;
+			float dist = length(ray_dir);
+			float3 norm_ray_dir = ray_dir / dist;
+
+			intersection_points_t ip = intersection_points_ray_aabb( prev_pos, norm_ray_dir, min, max );
+			if (ip.count > 0) {
+				for(int j = 0; j < ip.count; ++j) {
+					if (length(ip.points[j] - p) <= dist) {
+						collided = true;
+						break;
+					}
+				}
+			}
+
+			if (collided) {
+				break;
+			}
+
+			// if (p.x > min.x && p.y > min.y && p.z > min.z && p.x < max.x && p.y < max.y && p.z < max.z) {
+
+			// }
+
+		}
+
+		if (collided) {
+			stop_music();
+			camera.position.z += 1.0f;
+			play_sound(&resources->sounds[game_resources::SOUNDS_GAME_OVER]);		
+			--gameover_countdown;
+		}
+
+
 render:
 		// Drawing
 		float4x4 view_matrix_tmp = rotation_yaw_pitch_roll(camera.rotation.y, camera.rotation.x, camera.rotation.z);
