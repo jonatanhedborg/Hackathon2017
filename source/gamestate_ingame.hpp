@@ -95,15 +95,15 @@ struct gamestate_ingame : gamestate_common {
 		camera.position.y = current_pos[1];
 		camera.position.z = player_position;
 
-		if (camera.position.x > 2.0f)
+		if (camera.position.x > 1.85f)
 		{
-			camera.position.x = 2.0f;
+			camera.position.x = 1.85f;
 			//target_pos[0] = 2.0f;
 			//velocity_pos[0] = 0;
 		}
-		else if (camera.position.x < -2.0f)
+		else if (camera.position.x < -1.85f)
 		{
-			camera.position.x = -2.0f;
+			camera.position.x = -1.85f;
 			//target_pos[0] = -2.0f;
 			//velocity_pos[0] = 0;
 		}
@@ -113,9 +113,9 @@ struct gamestate_ingame : gamestate_common {
 			//target_pos[1] = 4.0f;
 			//velocity_pos[1] = 0;
 		}
-		else if (camera.position.y < 0.5f)
+		else if (camera.position.y < 0.65f)
 		{
-			camera.position.y = 0.5f;
+			camera.position.y = 0.65f;
 			//target_pos[1] = 0.5f;
 			//velocity_pos[1] = 0;
 		}
