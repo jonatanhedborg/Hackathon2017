@@ -165,6 +165,8 @@ struct gamestate_headpose : gamestate_common
 			// ic = ic < 0 ? 0 : ic > 255 ? 255 : ic;
 			// screen[ i ] = (uint8_t)ic;
 			// }
+		app_key_t input = get_input();
+		if(input == APP_KEY_ESCAPE) signal_exit();
 		}
 			
 

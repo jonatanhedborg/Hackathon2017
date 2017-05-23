@@ -582,7 +582,7 @@ int app_proc( app_t* app, void* user_data )
 	while( app_is_running( app ) )
 		{		
 		app_yield( app );
-		
+				
 		// stars
 		float delta_time = 1.0f / 60.0f;
 		memset( screen_xbgr, 0, sizeof( screen_xbgr ) );

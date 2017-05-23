@@ -51,6 +51,10 @@ struct gamestate_game_over : gamestate_common
 
 
 		renderer.render();
+		
+		app_key_t input = get_input();
+		if(input == APP_KEY_ESCAPE) signal_exit();
+		
 		}
 	
 	};

@@ -14,6 +14,8 @@ struct gamestate_delay : gamestate_common
 			{
 			switch_state<gamestate_intro>();
 			}
+		app_key_t input = get_input();
+		if(input == APP_KEY_ESCAPE) signal_exit();			
 		}
 	
 	};
