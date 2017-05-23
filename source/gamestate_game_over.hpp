@@ -9,7 +9,6 @@ struct gamestate_game_over : gamestate_common
 
 	gamestate_game_over( object_repo* ctx ) : gamestate_common( ctx ), renderer(graph)
 		{
-		stop_music();
 		projection_matrix = perspective_lh((float)pal_scr->width * 3.0f, (float)pal_scr->height * 3.0f, 0.1f, 1000.0f);
 		camera.position = float3(0, 2, 0);
 		camera.rotation = float3(0, 0, 0);

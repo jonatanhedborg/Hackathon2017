@@ -58,7 +58,7 @@ struct gamestate_common
 	void stop_music()
 	{
 		thread_mutex_lock(&update_context->audio_mutex);
-		audiosys_music_stop(update_context->audiosys, 2.0f);
+		audiosys_music_stop(update_context->audiosys, 1.0f);
 		thread_mutex_unlock(&update_context->audio_mutex);
 	}
 

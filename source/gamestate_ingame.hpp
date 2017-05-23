@@ -155,6 +155,7 @@ struct gamestate_ingame : gamestate_common {
 			max.z += o.position;
 
 			if (p.x > min.x && p.y > min.y && p.z > min.z && p.x < max.x && p.y < max.y && p.z < max.z) {
+				stop_music();
 				camera.position.z += 1.0f;
 				play_sound(&resources->sounds[game_resources::SOUNDS_GAME_OVER]);		
 				--gameover_countdown;
