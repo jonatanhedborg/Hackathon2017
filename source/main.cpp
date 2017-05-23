@@ -122,7 +122,7 @@ APP_U32 palette[ 16 ] =
 	0xaaaaaa,
 	0x555555, 
 	0xff5555, 
-	0x55ff55, 
+	0x10a010, 
 	0xffff55, 
 	0x5555ff, 
 	0xff55ff, 
@@ -236,6 +236,8 @@ struct game_resources
 		SOUNDS_LASER6,
 		SOUNDS_NEW_USER,
 		SOUNDS_GET_READY,
+		SOUNDS_AVOID_OBSTACLES,
+		SOUNDS_GAME_OVER,
 		SOUNDS_INGAME_MUSIC,
 		SOUNDS_COUNT,
 	};
@@ -260,6 +262,8 @@ void load_resources(game_resources* resources)
 	if (!load_sound(assetsys, "/data/laser6.ogg", &resources->sounds[game_resources::SOUNDS_LASER6])) assert(false);
 	if (!load_sound(assetsys, "/data/new_user.ogg", &resources->sounds[game_resources::SOUNDS_NEW_USER])) assert(false);
 	if (!load_sound(assetsys, "/data/get_ready.ogg", &resources->sounds[game_resources::SOUNDS_GET_READY])) assert(false);
+	if (!load_sound(assetsys, "/data/avoid_obstacles.ogg", &resources->sounds[game_resources::SOUNDS_AVOID_OBSTACLES])) assert(false);
+	if (!load_sound(assetsys, "/data/game_over.ogg", &resources->sounds[game_resources::SOUNDS_GAME_OVER])) assert(false);
 	if (!load_sound(assetsys, "/data/ingame_music.ogg", &resources->sounds[game_resources::SOUNDS_INGAME_MUSIC])) assert(false);
 
 	//models
