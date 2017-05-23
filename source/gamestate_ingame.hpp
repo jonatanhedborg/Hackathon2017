@@ -28,7 +28,7 @@ struct gamestate_ingame : gamestate_common {
 	camera_t camera;
 	int obstacle_min_interval = 7;
 	int obstacle_max_interval = 15;
-	int segments_to_next_obstacle = 3;
+	int segments_to_next_obstacle = 40;
 	
 	float next_segment_position;
 	float player_position;
@@ -68,26 +68,28 @@ struct gamestate_ingame : gamestate_common {
 		--segments_to_next_obstacle;
 		if( segments_to_next_obstacle == 0)
 		{
-			switch( rand( 0, 5 ) )
+			switch( rand( 0, 7 ) )
 			{
 				case 0:
+				case 1:
 					models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
 					break;	
-				case 1:
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
-					break;
 				case 2:
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
-					break;
 				case 3:
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_HOR_CENTER], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
 					break;
 				case 4:
 					models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_HOR_CENTER], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
 					break;
 				case 5:
+					models.add({&resources->models[game_resources::MODEL_OBSTACLE_HOR_CENTER], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					break;
+				case 6:
+					models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					models.add({&resources->models[game_resources::MODEL_OBSTACLE_HOR_CENTER], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					break;
+				case 7:
 					models.add({&resources->models[game_resources::MODEL_OBSTACLE_HOR_CENTER], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
 					models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
 					break;
