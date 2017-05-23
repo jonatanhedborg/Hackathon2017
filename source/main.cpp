@@ -231,6 +231,7 @@ struct game_resources
 		SOUNDS_LASER6,
 		SOUNDS_NEW_USER,
 		SOUNDS_GET_READY,
+		SOUNDS_INGAME_MUSIC,
 		SOUNDS_COUNT,
 	};
 
@@ -254,6 +255,7 @@ void load_resources(game_resources* resources)
 	if (!load_sound(assetsys, "/data/laser6.ogg", &resources->sounds[game_resources::SOUNDS_LASER6])) assert(false);
 	if (!load_sound(assetsys, "/data/new_user.ogg", &resources->sounds[game_resources::SOUNDS_NEW_USER])) assert(false);
 	if (!load_sound(assetsys, "/data/get_ready.ogg", &resources->sounds[game_resources::SOUNDS_GET_READY])) assert(false);
+	if (!load_sound(assetsys, "/data/ingame_music.ogg", &resources->sounds[game_resources::SOUNDS_INGAME_MUSIC])) assert(false);
 
 	//models
 	if(!load_model(assetsys, "/data/suzanne.obj", &resources->models[game_resources::MODEL_SUZANNE])) assert(false);

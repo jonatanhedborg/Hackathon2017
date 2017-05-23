@@ -35,6 +35,7 @@ struct gamestate_headpose : gamestate_common
 		};
 
 	bool exiting = false;
+	bool music = false;
 	float timer = 0.0f;
 	bool gaze_trace = false;
 	int gaze_radius = 40;
@@ -101,6 +102,11 @@ struct gamestate_headpose : gamestate_common
 			{
 			play_sound(&resources->sounds[game_resources::SOUNDS_GET_READY]);		
 			exiting = true;
+			}
+		if( !music && timer > 8.0f )
+			{
+			play_music(&resources->sounds[game_resources::SOUNDS_INGAME_MUSIC]);		
+			music = true;
 			}
 		if( exiting && timer < 9.0f )
 			{
