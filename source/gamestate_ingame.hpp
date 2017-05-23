@@ -26,6 +26,10 @@ struct gamestate_ingame : gamestate_common {
 	batch_renderer obstacle_renderer;
 	float4x4 projection_matrix;
 	camera_t camera;
+	int obstacle_min_interval = 7;
+	int obstacle_max_interval = 15;
+	int segments_to_next_obstacle = 3;
+	
 	float next_segment_position;
 	float player_position;
 
@@ -61,12 +65,26 @@ struct gamestate_ingame : gamestate_common {
 		models.add({&resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});
 		models.add({&resources->models[game_resources::MODEL_FLOOR], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});		
 
-		if (rand(1, 10) == 1) {
-			models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
-		}
+		--segments_to_next_obstacle;
+		if( segments_to_next_obstacle == 0)
+		{
+			switch( rand( 0, 2 ) )
+			{
+				case 0:
+					models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					break;	
+				case 1:
+					models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					break;
+				case 2:
+					models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					break;
+				
+			}
 
-		if (rand(1, 10) == 1) {
-			models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+			segments_to_next_obstacle = rand( obstacle_min_interval, obstacle_max_interval );
+>>>>>>> Better obstacle generation
 		}
 
 		next_segment_position -= 5.0f;
