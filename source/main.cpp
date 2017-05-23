@@ -432,7 +432,7 @@ int update_thread_proc( void* user_data)
     while( !context->exit_flag )
         {
 		// clear screen
-		memset(screen, 0, sizeof( screen ) );
+		memset(screen, MATERIAL_SKY, sizeof( screen ) );
 
 		// update frame
 		float delta_time = frametimer_update( frametimer );
@@ -552,8 +552,11 @@ int app_proc( app_t* app, void* user_data )
 		thread_mutex_lock( &update_thread_context.screen_mutex );
 		for( int i = 0; i < 320 * 200; ++i ) 
 			{
-			material_t m = materials[ (material_id) screen[ i ] ];
-			if( m.pal_index >= 0 ) screen_xbgr[ i ] = palette[ m.pal_index ];
+			material_id id = (material_id) screen[ i ];
+			if( id == MATERIAL_SKY ) continue;
+			
+			material_t m = materials[ id ];
+			screen_xbgr[ i ] = palette[ m.pal_index ];			
 			}
 		thread_mutex_unlock( &update_thread_context.screen_mutex );
 		app_present_xbgr32( app, screen_xbgr, 320, 200, 0xffffff, 0x000000 );
