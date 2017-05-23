@@ -101,12 +101,10 @@ struct gamestate_ingame : gamestate_common {
 					add_obstacle(game_resources::MODEL_OBSTACLE_HOR_CENTER, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					break;
 				case 6:
-					add_obstacle(game_resources::MODEL_OBSTACLE_LEFT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
-					add_obstacle(game_resources::MODEL_OBSTACLE_HOR_CENTER, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
+					add_obstacle(game_resources::MODEL_OBSTACLE_BIG_LEFT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					break;
 				case 7:
-					add_obstacle(game_resources::MODEL_OBSTACLE_HOR_CENTER, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
-					add_obstacle(game_resources::MODEL_OBSTACLE_RIGHT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
+					add_obstacle(game_resources::MODEL_OBSTACLE_BIG_RIGHT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					break;
 			}
 

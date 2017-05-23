@@ -222,6 +222,8 @@ struct game_resources
 		MODEL_OBSTACLE_LEFT,
 		MODEL_OBSTACLE_RIGHT,
 		MODEL_OBSTACLE_HOR_CENTER,
+		MODEL_OBSTACLE_BIG_RIGHT,
+		MODEL_OBSTACLE_BIG_LEFT,
 		MODEL_COUNT,
 	};
 	enum sounds_enum
@@ -275,6 +277,8 @@ void load_resources(game_resources* resources)
 	if(!load_model(assetsys, "/data/obstacle_left.obj", &resources->models[game_resources::MODEL_OBSTACLE_LEFT])) assert(false);
 	if(!load_model(assetsys, "/data/obstacle_right.obj", &resources->models[game_resources::MODEL_OBSTACLE_RIGHT])) assert(false);
 	if(!load_model(assetsys, "/data/obstacle_hor_center.obj", &resources->models[game_resources::MODEL_OBSTACLE_HOR_CENTER])) assert(false);
+	if(!load_model(assetsys, "/data/obstacle_right_big.obj", &resources->models[game_resources::MODEL_OBSTACLE_BIG_RIGHT])) assert(false);
+	if(!load_model(assetsys, "/data/obstacle_left_big.obj", &resources->models[game_resources::MODEL_OBSTACLE_BIG_LEFT])) assert(false);
 
 	assetsys_destroy(assetsys);
 }
