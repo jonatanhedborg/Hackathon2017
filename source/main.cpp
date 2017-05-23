@@ -215,9 +215,9 @@ struct game_resources
 		MODEL_RIGHT_WALL,
 		MODEL_FLOOR,
 		MODEL_RIGHT_WALL1,
-		MODEL_COUNT,
 		MODEL_OBSTACLE_LEFT,
 		MODEL_OBSTACLE_RIGHT,
+		MODEL_COUNT,
 	};
 	enum sounds_enum
 	{
