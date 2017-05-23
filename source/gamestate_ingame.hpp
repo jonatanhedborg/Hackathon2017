@@ -34,6 +34,7 @@ struct gamestate_ingame : gamestate_common {
 	int obstacle_min_interval = 7;
 	int obstacle_max_interval = 15;
 	int segments_to_next_obstacle = 40;
+	int wall_color = 0;
 	
 	float next_segment_position;
 	float player_position;
@@ -64,9 +65,10 @@ struct gamestate_ingame : gamestate_common {
 	}
 
 	void generate_segment() {
-		models.add({&resources->models[game_resources::MODEL_RIGHT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});
-		models.add({&resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});
-		models.add({&resources->models[game_resources::MODEL_FLOOR], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});		
+		wall_color = wall_color ? 0 : 1;
+		models.add({&resources->models[game_resources::MODEL_RIGHT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), wall_color ? MATERIAL_GREEN : MATERIAL_LIGHT_GREEN,  wall_color ? MATERIAL_LIGHT_CYAN : MATERIAL_BLACK });
+		models.add({&resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), wall_color ? MATERIAL_GREEN : MATERIAL_LIGHT_GREEN, wall_color ? MATERIAL_LIGHT_CYAN : MATERIAL_BLACK, TRENCH});
+		models.add({&resources->models[game_resources::MODEL_FLOOR], float3(0, 0, next_segment_position), float3(0, 0, 0), wall_color ? MATERIAL_GREEN : MATERIAL_LIGHT_GREEN, wall_color ? MATERIAL_LIGHT_CYAN : MATERIAL_BLACK, TRENCH});		
 
 		--segments_to_next_obstacle;
 		if( segments_to_next_obstacle == 0)
