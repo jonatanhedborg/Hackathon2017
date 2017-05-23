@@ -36,7 +36,7 @@ struct gamestate_common
 			}
 		char str[ 16 ];
 		sprintf( str, "%d", fps );
-		sysfont_8x8_u8( pal_scr->screen, pal_scr->width, pal_scr->height, pal_scr->width - 40, 20, str, MATERIAL_WHITE );
+		sysfont_8x8_u8( pal_scr->screen, pal_scr->width, pal_scr->height, 40, 20, str, MATERIAL_WHITE );
 		}
 
 	void play_sound(audiosys_audio_source_t* source)
