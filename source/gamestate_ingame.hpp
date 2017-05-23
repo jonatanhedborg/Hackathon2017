@@ -52,6 +52,7 @@ struct gamestate_ingame : gamestate_common {
 	float velocity_rot[3] = { 0.0f, 0.0f, 0.0f };
 	int score = 0;
 	int level = 1;
+	float player_velocity = 0.90f;
 
 	bool init_headpose = false;
 
@@ -169,7 +170,7 @@ struct gamestate_ingame : gamestate_common {
 
 		clean_up_segments();
 
-		player_position -= (0.90f * level) ;
+		player_position -= player_velocity;
 
 		if (tobii->head_pose.position_validity == TOBII_VALIDITY_VALID)
 		{
@@ -230,6 +231,12 @@ struct gamestate_ingame : gamestate_common {
 		}
 
 		camera.rotation.z = -current_rot[2];
+		++score;
+		if (score % 1000 == 0 && score != 0)
+		{
+			++level;
+			player_velocity *= 1.25f;
+		}
 render:
 		// Drawing
 		float4x4 view_matrix_tmp = rotation_yaw_pitch_roll(camera.rotation.y, camera.rotation.x, camera.rotation.z);
@@ -262,8 +269,8 @@ render:
 
 		trench_renderer.render();
 		obstacle_renderer.render();
-		
-		if (score % 1000 == 0 && score != 0) ++level;
+
+		//Draw HUD stuff
 		if ((score % 1000) < 60)
 		{
 			if (level == 1)
@@ -292,7 +299,6 @@ render:
 		if (input == APP_KEY_SPACE) play_sound(&resources->sounds[index]);
 		else if (input == APP_KEY_ESCAPE) signal_exit();
 
-		++score;
 #ifdef _DEBUG
 		update_fps();
 #endif
