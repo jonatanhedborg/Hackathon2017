@@ -216,6 +216,8 @@ struct game_resources
 		MODEL_FLOOR,
 		MODEL_RIGHT_WALL1,
 		MODEL_COUNT,
+		MODEL_OBSTACLE_LEFT,
+		MODEL_OBSTACLE_RIGHT,
 	};
 	enum sounds_enum
 	{
@@ -259,6 +261,8 @@ void load_resources(game_resources* resources)
 	if(!load_model(assetsys, "/data/standard_wall_right.obj", &resources->models[game_resources::MODEL_RIGHT_WALL])) assert(false);
 	if(!load_model(assetsys, "/data/standard_floor.obj", &resources->models[game_resources::MODEL_FLOOR])) assert(false);
 	if(!load_model(assetsys, "/data/shaped_wall_right_1.obj", &resources->models[game_resources::MODEL_RIGHT_WALL1])) assert(false);
+	if(!load_model(assetsys, "/data/obstacle_left.obj", &resources->models[game_resources::MODEL_OBSTACLE_LEFT])) assert(false);
+	if(!load_model(assetsys, "/data/obstacle_right.obj", &resources->models[game_resources::MODEL_OBSTACLE_RIGHT])) assert(false);
 
 	assetsys_destroy(assetsys);
 }
