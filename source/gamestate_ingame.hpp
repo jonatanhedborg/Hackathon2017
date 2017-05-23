@@ -1,10 +1,17 @@
 using namespace array_ns;
 
+enum RENDER_PASS {
+	TRENCH,
+	OBSTACLE
+};
+
 struct model_instance_t {
 	model_3d* model;
 	float3 position;
 	float3 rotation;
 	int material_fill, material_line;
+	RENDER_PASS pass;
+
 };
 
 struct camera_t {
@@ -14,7 +21,9 @@ struct camera_t {
 
 struct gamestate_ingame : gamestate_common {
 	array<model_instance_t> models;
-	batch_renderer renderer;
+
+	batch_renderer trench_renderer;
+	batch_renderer obstacle_renderer;
 	float4x4 projection_matrix;
 	camera_t camera;
 	float next_segment_position;
@@ -32,7 +41,12 @@ struct gamestate_ingame : gamestate_common {
 	float velocity_rot[3] = { 0.0f, 0.0f, 0.0f };
 
 
-	gamestate_ingame( object_repo* ctx ) : gamestate_common( ctx ), renderer(graph), next_segment_position(0), player_position(0) {
+	gamestate_ingame( object_repo* ctx ) 
+	: gamestate_common( ctx )
+	, trench_renderer(graph)
+	, obstacle_renderer(graph)
+	, next_segment_position(0)
+	, player_position(0) {
 		projection_matrix = perspective_lh((float)pal_scr->width * 2.0f, (float)pal_scr->height * 2.0f, 0.1f, 1000.0f);
 		camera.position = float3(0, 2, 0);
 		camera.rotation = float3(0, 0, 0);
@@ -43,9 +57,18 @@ struct gamestate_ingame : gamestate_common {
 	}
 
 	void generate_segment() {
-		models.add({&resources->models[game_resources::MODEL_RIGHT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW });
-		models.add({&resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW});
-		models.add({&resources->models[game_resources::MODEL_FLOOR], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW});		
+		models.add({&resources->models[game_resources::MODEL_RIGHT_WALL], float3(0, 0, next_segment_position), float3(), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});
+		models.add({&resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, next_segment_position), float3(), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});
+		models.add({&resources->models[game_resources::MODEL_FLOOR], float3(0, 0, next_segment_position), float3(), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});		
+
+		if (rand(1, 10) == 1) {
+			models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(), MATERIAL_BROWN, MATERIAL_MAGENTA, OBSTACLE});
+		}
+
+		if (rand(1, 10) == 1) {
+			models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(), MATERIAL_BROWN, MATERIAL_MAGENTA, OBSTACLE});
+		}
+
 		next_segment_position -= 5.0f;
 	}
 
@@ -137,13 +160,22 @@ struct gamestate_ingame : gamestate_common {
 			transformation = mul(transformation, view_projection_matrix);
 			float3* polygons = models[i].model->vertices.data();
 			for (int j = 0; j < models[i].model->vertices_per_polygon.count(); ++j) {
-				renderer.submit(models[i].material_fill, models[i].material_line, transformation, models[i].model->vertices_per_polygon[j], polygons);
+				switch(models[i].pass) {
+					case TRENCH:
+						trench_renderer.submit(models[i].material_fill, models[i].material_line, transformation, models[i].model->vertices_per_polygon[j], polygons);
+						break;
+			
+					case OBSTACLE:
+						obstacle_renderer.submit(models[i].material_fill, models[i].material_line, transformation, models[i].model->vertices_per_polygon[j], polygons);
+						break;
+				}
 				polygons += models[i].model->vertices_per_polygon[j];
 			}
 		}
 
 
-		renderer.render();
+		trench_renderer.render();
+		obstacle_renderer.render();
 		
 		int index = rand(game_resources::SOUNDS_LASER1, game_resources::SOUNDS_LASER6);
 		app_key_t input = get_input();
