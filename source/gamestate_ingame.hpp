@@ -19,8 +19,13 @@ struct camera_t {
 	float3 rotation;
 };
 
+struct obstacle_t {
+	float3 min, max, position;
+};
+
 struct gamestate_ingame : gamestate_common {
 	array<model_instance_t> models;
+	array<obstacle_t> obstacles;
 
 	batch_renderer trench_renderer;
 	batch_renderer obstacle_renderer;
