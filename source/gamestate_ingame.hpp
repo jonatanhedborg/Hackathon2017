@@ -20,6 +20,13 @@ struct gamestate_ingame : gamestate_common {
 	float next_segment_position;
 	float player_position;
 
+	float target_pos[3] = { 0.0f, 0.0f, 0.0f };
+	float current_pos[3] = { 0.0f, 0.0f, 0.0f };
+	float velocity_pos[3] = { 0.0f, 0.0f, 0.0f };
+
+	bool origin_initialized = false;
+	float headpose_origin_pos[3] = { 0.0f, 0.0f, 0.0f };
+
 
 	gamestate_ingame( object_repo* ctx ) : gamestate_common( ctx ), renderer(graph), next_segment_position(0), player_position(0) {
 		projection_matrix = perspective_lh((float)pal_scr->width, (float)pal_scr->height, 0.1f, 1000.0f);
@@ -56,7 +63,18 @@ struct gamestate_ingame : gamestate_common {
 		clean_up_segments();
 
 		player_position -= 0.3f;
-
+		if (tobii->head_pose.position_validity == TOBII_VALIDITY_VALID)
+		{
+			for (int i = 0; i < 2; ++i)
+			{
+				target_pos[i] = (tobii->head_pose.position_xyz[i] * 0.25f - headpose_origin_pos[i]) * 0.1f;
+				velocity_pos[i] -= velocity_pos[i] * 0.3f;
+				velocity_pos[i] += (target_pos[i] - current_pos[i]) * 0.2f;
+				current_pos[i] += velocity_pos[i] * 0.2f;
+			}
+		}
+		camera.position.x = current_pos[0];
+		camera.position.y = current_pos[1] + 7;
 		camera.position.z = player_position;
 
 		// Drawing
