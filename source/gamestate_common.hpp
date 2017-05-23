@@ -15,6 +15,9 @@ struct gamestate_common
 		timer = objrepo->get<frametimer_t>();
 		resources = objrepo->get<game_resources>();
 		update_context = objrepo->get<update_thread_context_t>();
+		gamestates = objrepo->get< gamestate::game_state_system<object_repo> >();
+		render_mode = objrepo->get<render_mode_t>();
+		fade_level = objrepo->get<uint8_t>();
 		}
 		
 	float randf() { return rnd_pcg_nextf( &pcg ); }
@@ -69,13 +72,21 @@ struct gamestate_common
 		thread_mutex_unlock(&update_context->signal_mutex);
 	}
 	
+	template< typename T > void switch_state() 
+		{ 
+		gamestates->set<T>(); 
+		}
+	
 	objrepo::object_repo* objrepo;
 	rnd_pcg_t pcg;
 	pal_screen* pal_scr;
 	uint8_t* screen;
+	gamestate::game_state_system<object_repo>* gamestates;
 	graph_ns::graph<pal_screen, uint8_t>* graph;
 	game_resources* resources;
 	tobii_t* tobii;
+	render_mode_t* render_mode;
+	uint8_t* fade_level;
 	frametimer_t* timer;
 	update_thread_context_t* update_context;
 	int fps_counter;

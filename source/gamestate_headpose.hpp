@@ -33,8 +33,10 @@ struct gamestate_headpose : gamestate_common
 		APP_U16 offsets[ 256 ];
 		APP_U8 glyphs[ 1 ]; // "open" array
 		};
-		
-	bool gaze_trace = true;
+
+	bool exiting = false;
+	float timer = 0.0f;
+	bool gaze_trace = false;
 	int gaze_radius = 40;
 	float* gaze_buffer;
 	float* grid_offsets;
@@ -56,6 +58,7 @@ struct gamestate_headpose : gamestate_common
 
 	gamestate_headpose( object_repo* ctx ) : gamestate_common( ctx )
 		{
+		*render_mode = RENDER_MODE_PALETTE;
 		width = pal_scr->width;
 		height = pal_scr->height;
 		gaze_buffer = (float*)malloc( width * height * sizeof( float ) );
@@ -81,6 +84,7 @@ struct gamestate_headpose : gamestate_common
 		
 	~gamestate_headpose()
 		{
+		*render_mode = RENDER_MODE_MATERIALS;
 		free( gaze_buffer );
 		free( grid_offsets );
 		}
@@ -88,6 +92,25 @@ struct gamestate_headpose : gamestate_common
 		
 	void update( object_repo* )
 		{
+		timer += get_delta_time();
+		if( timer <= 3.0f )
+			{
+			*fade_level = (uint8_t)( ( timer / 3.0f )* 255.0f );
+			}
+		if( !exiting && timer > 6.0f )
+			{
+			play_sound(&resources->sounds[game_resources::SOUNDS_GET_READY]);		
+			exiting = true;
+			}
+		if( exiting && timer < 9.0f )
+			{
+			float t = vecmath::clamp( ( timer - 6.0f ) / 3.0f, 0.0f, 1.0f );
+			*fade_level = (uint8_t)( 255 - t * 255.0f );
+			}
+		if( exiting && timer > 9.0f )
+			{
+			switch_state<gamestate_ingame>();
+			}
 		if( !origin_initialized && tobii->head_pose.position_validity == TOBII_VALIDITY_VALID )
 			{
 			for( int i = 0; i < 3; ++i ) 
@@ -95,8 +118,8 @@ struct gamestate_headpose : gamestate_common
 			origin_initialized = true;
 			}
 		
-		pixelfont_t* font = (pixelfont_t*) font_data;
-		pixelfont_t* big_font = (pixelfont_t*) big_font_data;
+		// pixelfont_t* font = (pixelfont_t*) font_data;
+		// pixelfont_t* big_font = (pixelfont_t*) big_font_data;
 
 		for( int i = 0; i < 3; ++i ) 
 			{
@@ -111,31 +134,31 @@ struct gamestate_headpose : gamestate_common
 			current_pos[ i ] += velocity_pos[ i ] * 0.2f;
 			}
 			
-		render_grid( tobii->gaze_point.position_xy[ 0 ], tobii->gaze_point.position_xy[ 1 ], ( gaze_trace && tobii->gaze_point.validity == TOBII_VALIDITY_VALID ) ? 
-			gaze_radius : 0, grid_offsets, width, height, screen );
-		render_matrix( &matrix_data, font, width, height, screen );
+		// render_grid( tobii->gaze_point.position_xy[ 0 ], tobii->gaze_point.position_xy[ 1 ], ( gaze_trace && tobii->gaze_point.validity == TOBII_VALIDITY_VALID ) ? 
+			// gaze_radius : 0, grid_offsets, width, height, screen );
+		// render_matrix( &matrix_data, font, width, height, screen );
 		render_head( 0, current_pos, current_rot, width, height, screen );				
-		render_gaze( tobii->gaze_point.position_xy[ 0 ], tobii->gaze_point.position_xy[ 1 ], ( gaze_trace && tobii->gaze_point.validity == TOBII_VALIDITY_VALID ) ? 
-			gaze_radius : 0, gaze_buffer, width, height );
+		// render_gaze( tobii->gaze_point.position_xy[ 0 ], tobii->gaze_point.position_xy[ 1 ], ( gaze_trace && tobii->gaze_point.validity == TOBII_VALIDITY_VALID ) ? 
+			// gaze_radius : 0, gaze_buffer, width, height );
 
-		char buffer[ 64 ];
-		sprintf( buffer, "RX:% 05.1f\nRY:% 05.1f\nRZ:% 05.1f\n", current_rot[ 0 ] * 180.0f / PI, current_rot[ 1 ] * 180.0f / PI, current_rot[ 2 ] * 180.0f / PI );
-		text( big_font, buffer, 30, 60, 255, 0, screen, width, height );
-		sprintf( buffer, "PX:% 05.1f", current_pos[ 0 ] * 300 );
-		text( big_font, buffer, 130, 160, 255, 0, screen, width, height );
-		sprintf( buffer, "PY:% 05.1f", current_pos[ 1 ] * 300 );
-		text( big_font, buffer, 190, 160, 255, 0, screen, width, height );
-		sprintf( buffer, "PZ:% 05.1f", current_pos[ 2 ] * 300 );
-		text( big_font, buffer, 250, 160, 255, 0, screen, width, height );
+		// char buffer[ 64 ];
+		// sprintf( buffer, "RX:% 05.1f\nRY:% 05.1f\nRZ:% 05.1f\n", current_rot[ 0 ] * 180.0f / PI, current_rot[ 1 ] * 180.0f / PI, current_rot[ 2 ] * 180.0f / PI );
+		// text( big_font, buffer, 30, 60, 255, 0, screen, width, height );
+		// sprintf( buffer, "PX:% 05.1f", current_pos[ 0 ] * 300 );
+		// text( big_font, buffer, 130, 160, 255, 0, screen, width, height );
+		// sprintf( buffer, "PY:% 05.1f", current_pos[ 1 ] * 300 );
+		// text( big_font, buffer, 190, 160, 255, 0, screen, width, height );
+		// sprintf( buffer, "PZ:% 05.1f", current_pos[ 2 ] * 300 );
+		// text( big_font, buffer, 250, 160, 255, 0, screen, width, height );
 	
-		for( int i = 0; i < width * height; ++i ) 
-			{
-			float g = gaze_buffer[ i ];
-			g = g < 0.0f ? 0.0f : g > 1.0f ? 1.0f : g;			
-			int ic = screen[ i ] + (int)( pal_orange[ (int)( g * 255.0f ) ] >> 24 );
-			ic = ic < 0 ? 0 : ic > 255 ? 255 : ic;
-			screen[ i ] = (uint8_t)ic;
-			}
+		// for( int i = 0; i < width * height; ++i ) 
+			// {
+			// float g = gaze_buffer[ i ];
+			// g = g < 0.0f ? 0.0f : g > 1.0f ? 1.0f : g;			
+			// int ic = screen[ i ] + (int)( pal_orange[ (int)( g * 255.0f ) ] >> 24 );
+			// ic = ic < 0 ? 0 : ic > 255 ? 255 : ic;
+			// screen[ i ] = (uint8_t)ic;
+			// }
 		}
 			
 

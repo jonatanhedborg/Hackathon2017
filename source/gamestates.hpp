@@ -1,3 +1,8 @@
+struct gamestate_intro; 
+struct gamestate_test3d;
+struct gamestate_headpose;
+struct gamestate_ingame;
+
 #include "gamestate_ingame.hpp"
 #include "gamestate_intro.hpp"
 #include "gamestate_test3d.hpp"
@@ -12,5 +17,5 @@ void init_gamestates( gamestate::game_state_system<object_repo>* gamestates )
 	gamestates->add<gamestate_ingame, &gamestate_ingame::update>();
 
 	// set initial game state
-	gamestates->set<gamestate_ingame>();
+	gamestates->set<gamestate_intro>();
 	}
