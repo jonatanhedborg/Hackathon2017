@@ -299,7 +299,7 @@ render:
 			}
 		}
 		char str[16];
-		sprintf(str, "%d", global_score);
+		sprintf(str, "%d", score);
 		sysfont_9x16_u8(pal_scr->screen, pal_scr->width, pal_scr->height, pal_scr->width / 2 - ( (int)strlen( str ) * 9 )/ 2, 20, str, MATERIAL_WHITE);
 
 		int index = rand(game_resources::SOUNDS_LASER1, game_resources::SOUNDS_LASER6);
