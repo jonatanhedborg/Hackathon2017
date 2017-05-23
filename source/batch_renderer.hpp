@@ -64,12 +64,12 @@ struct batch_renderer
 
 		bool operator<( polygon_t const& other ) const
 			{
-			return z < other.z;
+			return z > other.z;
 			}
 			
 		bool operator>( polygon_t const& other ) const
 			{
-			return z > other.z;
+			return z < other.z;
 			}
 		};
 		

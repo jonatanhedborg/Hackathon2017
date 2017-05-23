@@ -62,11 +62,11 @@ struct gamestate_ingame : gamestate_common {
 		models.add({&resources->models[game_resources::MODEL_FLOOR], float3(0, 0, next_segment_position), float3(), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});		
 
 		if (rand(1, 10) == 1) {
-			models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(), MATERIAL_BROWN, MATERIAL_MAGENTA, OBSTACLE});
+			models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
 		}
 
 		if (rand(1, 10) == 1) {
-			models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(), MATERIAL_BROWN, MATERIAL_MAGENTA, OBSTACLE});
+			models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
 		}
 
 		next_segment_position -= 5.0f;
