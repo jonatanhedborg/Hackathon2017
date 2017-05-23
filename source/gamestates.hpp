@@ -17,5 +17,9 @@ void init_gamestates( gamestate::game_state_system<object_repo>* gamestates )
 	gamestates->add<gamestate_ingame, &gamestate_ingame::update>();
 
 	// set initial game state
+	#ifdef _DEBUG
+	gamestates->set<gamestate_ingame>();
+	#else // _DEBUG
 	gamestates->set<gamestate_intro>();
+	#endif	
 	}

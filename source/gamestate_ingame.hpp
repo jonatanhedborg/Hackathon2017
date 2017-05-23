@@ -33,7 +33,7 @@ struct gamestate_ingame : gamestate_common {
 
 
 	gamestate_ingame( object_repo* ctx ) : gamestate_common( ctx ), renderer(graph), next_segment_position(0), player_position(0) {
-		projection_matrix = perspective_lh((float)pal_scr->width, (float)pal_scr->height, 0.1f, 1000.0f);
+		projection_matrix = perspective_lh((float)pal_scr->width * 2.0f, (float)pal_scr->height * 2.0f, 0.1f, 1000.0f);
 		camera.position = float3(0, 2, 0);
 		camera.rotation = float3(0, 0, 0);
 
@@ -66,7 +66,7 @@ struct gamestate_ingame : gamestate_common {
 
 		clean_up_segments();
 
-		player_position -= 0.3f;
+		player_position -= 0.6f;
 
 		if (!origin_initialized && tobii->head_pose.position_validity == TOBII_VALIDITY_VALID)
 		{
@@ -95,6 +95,31 @@ struct gamestate_ingame : gamestate_common {
 		camera.position.y = current_pos[1];
 		camera.position.z = player_position;
 
+		if (camera.position.x > 2.0f)
+		{
+			camera.position.x = 2.0f;
+			//target_pos[0] = 2.0f;
+			//velocity_pos[0] = 0;
+		}
+		else if (camera.position.x < -2.0f)
+		{
+			camera.position.x = -2.0f;
+			//target_pos[0] = -2.0f;
+			//velocity_pos[0] = 0;
+		}
+		if (camera.position.y > 4.0f)
+		{
+			camera.position.y = 4.0f;
+			//target_pos[1] = 4.0f;
+			//velocity_pos[1] = 0;
+		}
+		else if (camera.position.y < 0.5f)
+		{
+			camera.position.y = 0.5f;
+			//target_pos[1] = 0.5f;
+			//velocity_pos[1] = 0;
+		}
+
 		camera.rotation.z = -current_rot[2];
 
 		// Drawing
@@ -116,6 +141,7 @@ struct gamestate_ingame : gamestate_common {
 				polygons += models[i].model->vertices_per_polygon[j];
 			}
 		}
+
 
 		renderer.render();
 		
