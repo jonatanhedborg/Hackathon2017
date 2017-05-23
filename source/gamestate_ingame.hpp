@@ -20,6 +20,17 @@ struct gamestate_ingame : gamestate_common {
 	float next_segment_position;
 	float player_position;
 
+	float target_pos[3] = { 0.0f, 0.0f, 0.0f };
+	float current_pos[3] = { 0.0f, 0.0f, 0.0f };
+	float velocity_pos[3] = { 0.0f, 0.0f, 0.0f };
+
+	bool origin_initialized = false;
+	float headpose_origin_pos[3] = { 0.0f, 0.0f, 0.0f };
+
+	float target_rot[3] = { 0.0f, 0.0f, 0.0f };
+	float current_rot[3] = { 0.0f, 0.0f, 0.0f };
+	float velocity_rot[3] = { 0.0f, 0.0f, 0.0f };
+
 
 	gamestate_ingame( object_repo* ctx ) : gamestate_common( ctx ), renderer(graph), next_segment_position(0), player_position(0) {
 		projection_matrix = perspective_lh((float)pal_scr->width, (float)pal_scr->height, 0.1f, 1000.0f);
@@ -57,7 +68,34 @@ struct gamestate_ingame : gamestate_common {
 
 		player_position -= 0.3f;
 
+		if (!origin_initialized && tobii->head_pose.position_validity == TOBII_VALIDITY_VALID)
+		{
+			for (int i = 0; i < 3; ++i)
+				headpose_origin_pos[i] = tobii->head_pose.position_xyz[i] * 0.35f;
+			origin_initialized = true;
+		}
+
+		if (tobii->head_pose.position_validity == TOBII_VALIDITY_VALID)
+		{
+			for (int i = 0; i < 2; ++i)
+			{
+				target_pos[i] = (tobii->head_pose.position_xyz[i] * 0.25f - headpose_origin_pos[i]) * 0.1f;
+				velocity_pos[i] -= velocity_pos[i] * 0.3f;
+				velocity_pos[i] += (target_pos[i] - current_pos[i]) * 0.2f;
+				current_pos[i] += velocity_pos[i] * 0.2f;
+			}
+		}
+
+		target_rot[2] = -tobii->head_pose.rotation_xyz[2];
+		velocity_rot[2] -= velocity_rot[2] * 0.3f;
+		velocity_rot[2] += (target_rot[2] - current_rot[2]) * 0.2f;
+		current_rot[2] += velocity_rot[2] * 0.1f;
+
+		camera.position.x = current_pos[0];
+		camera.position.y = current_pos[1];
 		camera.position.z = player_position;
+
+		camera.rotation.z = -current_rot[2];
 
 		// Drawing
 		float4x4 view_matrix_tmp = rotation_yaw_pitch_roll(camera.rotation.y, camera.rotation.x, camera.rotation.z);
