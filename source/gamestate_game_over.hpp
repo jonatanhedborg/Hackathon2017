@@ -42,6 +42,11 @@ struct gamestate_game_over : gamestate_common
 				renderer.submit(models[i].material_fill, models[i].material_line, transformation, models[i].model->vertices_per_polygon[j], polygons);
 				polygons += models[i].model->vertices_per_polygon[j];
 			}
+
+		char str[16];
+		sprintf(str, "%d", global_score);
+		sysfont_9x16_u8(pal_scr->screen, pal_scr->width, pal_scr->height, pal_scr->width / 2 - ( (int)strlen( str ) * 9 )/ 2, 20, str, MATERIAL_WHITE);
+
 		}
 
 
