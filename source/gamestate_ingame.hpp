@@ -31,9 +31,12 @@ struct gamestate_ingame : gamestate_common {
 	batch_renderer obstacle_renderer;
 	float4x4 projection_matrix;
 	camera_t camera;
+	
+	int hint_count = 60;
+	
 	int obstacle_min_interval = 7;
 	int obstacle_max_interval = 15;
-	int segments_to_next_obstacle = 40;
+	int segments_to_next_obstacle = 70;
 	int wall_color = 0;
 	
 	float next_segment_position;
@@ -119,6 +122,12 @@ struct gamestate_ingame : gamestate_common {
 		// Fun stuff
 		if (player_position - 200 < next_segment_position) {
 			generate_segment();
+		}
+		if( hint_count > 0 )
+		{
+			--hint_count;
+			if( hint_count == 0 )
+				play_sound(&resources->sounds[game_resources::SOUNDS_AVOID_OBSTACLES]);		
 		}
 
 		clean_up_segments();
