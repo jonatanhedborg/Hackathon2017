@@ -20,7 +20,8 @@ struct camera_t {
 };
 
 struct obstacle_t {
-	float3 min, max, position;
+	float3 min, max;
+	float position;
 };
 
 struct gamestate_ingame : gamestate_common {
@@ -65,6 +66,11 @@ struct gamestate_ingame : gamestate_common {
 		}
 	}
 
+	void add_obstacle(game_resources::model_enum model, material_id background, material_id foreground) {
+		models.add({&resources->models[model], float3(0, 0, next_segment_position), float3(0.0f), background, foreground, OBSTACLE});
+		obstacles.add({resources->models[model].bounds_min, resources->models[model].bounds_max, next_segment_position});
+	}
+
 	void generate_segment() {
 		models.add({&resources->models[game_resources::MODEL_RIGHT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});
 		models.add({&resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), MATERIAL_GREEN, rand( 0, 1 ) ? MATERIAL_LIGHT_GREEN : MATERIAL_LIGHT_CYAN_HI_GLOW, TRENCH});
@@ -77,26 +83,27 @@ struct gamestate_ingame : gamestate_common {
 			{
 				case 0:
 				case 1:
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					add_obstacle(game_resources::MODEL_OBSTACLE_LEFT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
+					
 					break;	
 				case 2:
 				case 3:
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					add_obstacle(game_resources::MODEL_OBSTACLE_RIGHT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					break;
 				case 4:
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					add_obstacle(game_resources::MODEL_OBSTACLE_LEFT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
+					add_obstacle(game_resources::MODEL_OBSTACLE_RIGHT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					break;
 				case 5:
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_HOR_CENTER], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					add_obstacle(game_resources::MODEL_OBSTACLE_HOR_CENTER, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					break;
 				case 6:
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_LEFT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_HOR_CENTER], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					add_obstacle(game_resources::MODEL_OBSTACLE_LEFT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
+					add_obstacle(game_resources::MODEL_OBSTACLE_HOR_CENTER, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					break;
 				case 7:
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_HOR_CENTER], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
-					models.add({&resources->models[game_resources::MODEL_OBSTACLE_RIGHT], float3(0, 0, next_segment_position), float3(0.0f), MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW, OBSTACLE});
+					add_obstacle(game_resources::MODEL_OBSTACLE_HOR_CENTER, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
+					add_obstacle(game_resources::MODEL_OBSTACLE_RIGHT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					break;
 			}
 
@@ -113,12 +120,33 @@ struct gamestate_ingame : gamestate_common {
 				--i;
 			}
 		}
+
+		for (int i = 0; i < obstacles.count(); ++i) {
+			if (obstacles[i].position > camera.position.z ) {
+				obstacles.remove(i);
+				--i;
+			}
+		}
 	}
 
 	void update( object_repo* )	{
 		// Fun stuff
 		if (player_position - 150 < next_segment_position) {
 			generate_segment();
+		}
+
+		for (int i = 0; i < obstacles.count(); ++i) {
+			obstacle_t o = obstacles[i];
+			float3 p = camera.position;
+			float3 min = o.min;
+			min.z += o.position;
+			float3 max = o.max;
+			max.z += o.position;
+
+			if (p.x > min.x && p.y > min.y && p.z > min.z && p.x < max.x && p.y < max.y && p.z < max.z) {
+				switch_state<gamestate_intro>();
+			}
+
 		}
 
 		clean_up_segments();

@@ -9,6 +9,7 @@ struct model_3d
 {
 	array_ns::array<float3> vertices;
 	array_ns::array<int> vertices_per_polygon;
+	float3 bounds_min, bounds_max;
 };
 
 bool load_model(assetsys_t* assetsys, char* name, model_3d* loaded_model)
@@ -60,6 +61,32 @@ bool load_model(assetsys_t* assetsys, char* name, model_3d* loaded_model)
 		// 	loaded_model->vertices.add( vecmath::float3( attrib.vertices[i], attrib.vertices[i + 1], attrib.vertices[i + 2] ) );
 		// for (int i = 0; i < attrib.num_faces; ++i)
 		// 	loaded_model->vertices_per_shape.add(attrib.face_num_verts[i]);
+
+		float3 min = float3(100.0f, 100.0f, 100.0f);
+		float3 max = float3(-100.0f, -100.0f, -100.0f);
+		for (int i = 0; i < loaded_model->vertices.count(); ++i) {
+			float3 v = loaded_model->vertices[i];
+			if (min.x > v.x) {
+				min.x = v.x;
+			}
+			if (min.y > v.y) {
+				min.y = v.y;
+			}
+			if (min.z > v.z) {
+				min.z = v.z;
+			}
+			if (max.x < v.x) {
+				max.x = v.x;
+			}
+			if (max.y < v.y) {
+				max.y = v.y;
+			}
+			if (max.z < v.z) {
+				max.z = v.z;
+			}
+		}
+		loaded_model->bounds_max = max;
+		loaded_model->bounds_min = min;
 
 		tinyobj_attrib_free(&attrib);
 		tinyobj_shapes_free(shapes, num_shapes);
