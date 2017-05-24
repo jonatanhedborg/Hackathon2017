@@ -18,6 +18,8 @@ struct gamestate_intro : gamestate_common
 				switch_state<gamestate_headpose>();
 				}
 			}
+		app_key_t input = get_input();
+		if(input == APP_KEY_ESCAPE) signal_exit();
 		}
 	
 	};
