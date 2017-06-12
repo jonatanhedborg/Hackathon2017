@@ -34,22 +34,46 @@ struct batch_renderer
 			polygons.add( poly );
 		}
 		
-	void render()
+	void render( bool separate_line_pass )
 		{
 		int count = polygons.count();
 		polygon_t* poly = polygons.data();
 		sort_ns::sort( poly, count );
-		for( int i = 0; i < count; ++i )
+		if( separate_line_pass )
 			{
-			int* v = poly->verts;
-			scr->polygon_fill<64>( v, poly->count, (uint8_t) poly->material_fill );
-			for( int j = 0; j < poly->count + 1; ++j )
+			polygon_t* p = poly;
+			for( int i = 0; i < count; ++i )
 				{
-				int n = ( j % poly->count ) * 2;
-				int m = ( ( j + 1 ) % poly->count ) * 2;
-				scr->line( v[ n + 0 ], v[ n + 1 ], v[ m + 0 ], v[ m + 1 ], (uint8_t) poly->material_line );
+				int* v = p->verts;
+				scr->polygon_fill<64>( v, p->count, (uint8_t) p->material_fill );
+				++p;
 				}
-			++poly;
+			for( int i = 0; i < count; ++i )
+				{
+				int* v = poly->verts;
+				for( int j = 0; j < poly->count + 1; ++j )
+					{
+					int n = ( j % poly->count ) * 2;
+					int m = ( ( j + 1 ) % poly->count ) * 2;
+					scr->line( v[ n + 0 ], v[ n + 1 ], v[ m + 0 ], v[ m + 1 ], (uint8_t) poly->material_line );
+					}
+				++poly;
+				}
+			}
+		else
+			{
+			for( int i = 0; i < count; ++i )
+				{
+				int* v = poly->verts;
+				scr->polygon_fill<64>( v, poly->count, (uint8_t) poly->material_fill );
+				for( int j = 0; j < poly->count + 1; ++j )
+					{
+					int n = ( j % poly->count ) * 2;
+					int m = ( ( j + 1 ) % poly->count ) * 2;
+					scr->line( v[ n + 0 ], v[ n + 1 ], v[ m + 0 ], v[ m + 1 ], (uint8_t) poly->material_line );
+					}
+				++poly;
+				}
 			}
 		polygons.clear();
 		}

@@ -24,6 +24,7 @@ struct obstacle_t {
 	float position;
 };
 
+
 static int global_score = 0;
 
 struct gamestate_ingame : gamestate_common {
@@ -39,7 +40,7 @@ struct gamestate_ingame : gamestate_common {
 	int hint_count = 60;
 	int gameover_countdown = 120;
 	
-	int obstacle_min_interval = 7;
+	int obstacle_min_interval = 8;
 	int obstacle_max_interval = 15;
 	int segments_to_next_obstacle = 70;
 	int wall_color = 0;
@@ -58,6 +59,32 @@ struct gamestate_ingame : gamestate_common {
 
 	bool init_headpose = false;
 
+	template< typename T > void shuffle( T* array, int count )
+		{
+		for( int i = 0; i < count; ++i )
+			{
+			int r = rand( i, count - 1 );
+			T temp = array[ i ];
+			array[ i ] = array[ r ];
+			array[ r ] = temp;
+			}
+		}
+
+	array<int> obstacle_deck;
+	
+	void init_obstacle_deck()
+		{
+		for( int i = 0; i < 2; ++i )
+			{
+			obstacle_deck.add( 0 );
+			obstacle_deck.add( 1 );
+			obstacle_deck.add( 2 );
+			obstacle_deck.add( 3 );
+			obstacle_deck.add( 4 );
+			obstacle_deck.add( 5 );
+			}
+		shuffle( obstacle_deck.data(), obstacle_deck.count() );
+		}
 
 	gamestate_ingame( object_repo* ctx ) 
 	: gamestate_common( ctx )
@@ -72,6 +99,8 @@ struct gamestate_ingame : gamestate_common {
 		for(int i = 0; i < 3; ++i) {
 			generate_segment();
 		}
+		init_obstacle_deck();
+		obstacle_deck[ obstacle_deck.count() - 1 ] = 3;
 	}
 
 	~gamestate_ingame()
@@ -86,35 +115,35 @@ struct gamestate_ingame : gamestate_common {
 
 	void generate_segment() {
 		wall_color = wall_color ? 0 : 1;
-		models.add({&resources->models[game_resources::MODEL_RIGHT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), wall_color ? MATERIAL_GREEN : MATERIAL_LIGHT_GREEN,  wall_color ? MATERIAL_LIGHT_CYAN : MATERIAL_BLACK });
-		models.add({&resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), wall_color ? MATERIAL_GREEN : MATERIAL_LIGHT_GREEN, wall_color ? MATERIAL_LIGHT_CYAN : MATERIAL_BLACK, TRENCH});
-		models.add({&resources->models[game_resources::MODEL_FLOOR], float3(0, 0, next_segment_position), float3(0, 0, 0), wall_color ? MATERIAL_GREEN : MATERIAL_LIGHT_GREEN, wall_color ? MATERIAL_LIGHT_CYAN : MATERIAL_BLACK, TRENCH});		
+		models.add({&resources->models[game_resources::MODEL_RIGHT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), wall_color ? MATERIAL_GREEN : MATERIAL_LIGHT_GREEN,  wall_color ? MATERIAL_LIGHT_CYAN : MATERIAL_CYAN });
+		models.add({&resources->models[game_resources::MODEL_LEFT_WALL], float3(0, 0, next_segment_position), float3(0, 0, 0), wall_color ? MATERIAL_GREEN : MATERIAL_LIGHT_GREEN, wall_color ? MATERIAL_LIGHT_CYAN : MATERIAL_CYAN, TRENCH});
+		models.add({&resources->models[game_resources::MODEL_FLOOR], float3(0, 0, next_segment_position), float3(0, 0, 0), wall_color ? MATERIAL_GREEN : MATERIAL_LIGHT_GREEN, wall_color ? MATERIAL_LIGHT_CYAN : MATERIAL_CYAN, TRENCH});		
 
 		--segments_to_next_obstacle;
 		if( segments_to_next_obstacle == 0)
 		{
-			switch( rand( 0, 7 ) )
+			if( obstacle_deck.count() == 0 ) init_obstacle_deck();
+			int r = obstacle_deck[ obstacle_deck.count() - 1 ];
+			obstacle_deck.remove( obstacle_deck.count() - 1 );
+			switch( r )
 			{
 				case 0:
-				case 1:
-					add_obstacle(game_resources::MODEL_OBSTACLE_LEFT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
-					
+					add_obstacle(game_resources::MODEL_OBSTACLE_LEFT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);					
 					break;	
-				case 2:
-				case 3:
+				case 1:
 					add_obstacle(game_resources::MODEL_OBSTACLE_RIGHT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					break;
-				case 4:
+				case 2:
 					add_obstacle(game_resources::MODEL_OBSTACLE_LEFT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					add_obstacle(game_resources::MODEL_OBSTACLE_RIGHT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_GLOW);
 					break;
-				case 5:
+				case 3:
 					add_obstacle(game_resources::MODEL_OBSTACLE_HOR_CENTER, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_LOWGLOW);
 					break;
-				case 6:
+				case 4:
 					add_obstacle(game_resources::MODEL_OBSTACLE_BIG_LEFT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_LOWGLOW);
 					break;
-				case 7:
+				case 5:
 					add_obstacle(game_resources::MODEL_OBSTACLE_BIG_RIGHT, MATERIAL_RED_GLOW, MATERIAL_LIGHT_RED_LOWGLOW);
 					break;
 			}
@@ -222,10 +251,16 @@ struct gamestate_ingame : gamestate_common {
 
 		camera.rotation.z = -current_rot[2];
 		++score;
+		if( ( score % 1000 ) > 750 + (int)( 60 * player_velocity ) ) segments_to_next_obstacle = (int)( 20 + 0 * player_velocity );
 		if (score % 1000 == 0 && score != 0)
 		{
-			++level;
+			++level;			
 			player_velocity *= 1.25f;
+			//if( ( level % 2 ) == 1 ) 
+				++obstacle_max_interval;
+			//if( ( level % 3 ) == 2 ) 
+				++obstacle_min_interval;
+			init_obstacle_deck();
 		}
 
 
@@ -302,8 +337,8 @@ render:
 		}
 
 
-		trench_renderer.render();
-		obstacle_renderer.render();
+		trench_renderer.render( true );
+		obstacle_renderer.render( false );
 
 		//Draw HUD stuff
 		if ((score % 1000) < 100)
