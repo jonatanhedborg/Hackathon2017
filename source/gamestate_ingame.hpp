@@ -300,6 +300,10 @@ struct gamestate_ingame : gamestate_common {
 		}
 
 		if (collided) {
+			play_sound(&resources->sounds[game_resources::SOUNDS_HIT] );		
+			play_sound(&resources->sounds[game_resources::SOUNDS_HIT] );		
+			play_sound(&resources->sounds[game_resources::SOUNDS_EXPLOSION] );	
+			play_sound(&resources->sounds[game_resources::SOUNDS_EXPLOSION] );	
 			stop_music();
 			camera.position.z += 1.0f;
 			play_sound(&resources->sounds[game_resources::SOUNDS_GAME_OVER]);		
@@ -353,6 +357,7 @@ render:
 			}
 			else
 			{
+				if( score  % 24 == 0 && (score % 1000) < 70 ) play_sound(&resources->sounds[game_resources::SOUNDS_PICKUP], 0.5f);		
 				if (score % 33 < 16)
 				{
 					char* level_up = "Level up!";

@@ -39,10 +39,11 @@ struct gamestate_common
 		sysfont_8x8_u8( pal_scr->screen, pal_scr->width, pal_scr->height, 40, 20, str, MATERIAL_WHITE );
 		}
 
-	void play_sound(audiosys_audio_source_t* source)
+	void play_sound(audiosys_audio_source_t* source, float volume = 1.0f )
 	{
 		thread_mutex_lock(&update_context->audio_mutex);
-		audiosys_sound_play(update_context->audiosys, *source, 0.0f, 0.0f);
+		AUDIOSYS_U64 handle = audiosys_sound_play(update_context->audiosys, *source, 0.0f, 0.0f);
+		audiosys_sound_volume_set( update_context->audiosys, handle, volume );
 		thread_mutex_unlock(&update_context->audio_mutex);
 	}
 

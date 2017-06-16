@@ -249,6 +249,8 @@ struct game_resources
 		SOUNDS_AVOID_OBSTACLES,
 		SOUNDS_GAME_OVER,
 		SOUNDS_INGAME_MUSIC,
+		SOUNDS_EXPLOSION,
+		SOUNDS_HIT,
 		SOUNDS_COUNT,
 	};
 
@@ -275,6 +277,8 @@ void load_resources(game_resources* resources)
 	if (!load_sound(assetsys, "/data/avoid_obstacles.ogg", &resources->sounds[game_resources::SOUNDS_AVOID_OBSTACLES])) assert(false);
 	if (!load_sound(assetsys, "/data/game_over.ogg", &resources->sounds[game_resources::SOUNDS_GAME_OVER])) assert(false);
 	if (!load_sound(assetsys, "/data/ingame_music.ogg", &resources->sounds[game_resources::SOUNDS_INGAME_MUSIC])) assert(false);
+	if (!load_sound(assetsys, "/data/explosion.ogg", &resources->sounds[game_resources::SOUNDS_EXPLOSION])) assert(false);
+	if (!load_sound(assetsys, "/data/hit.ogg", &resources->sounds[game_resources::SOUNDS_HIT])) assert(false);
 
 	//models
 	if(!load_model(assetsys, "/data/suzanne.obj", &resources->models[game_resources::MODEL_SUZANNE])) assert(false);
@@ -511,6 +515,7 @@ int app_proc( app_t* app, void* user_data )
 	{
 	(void) user_data;
 	app_title( app, "Macula Run" );
+	app_pointer( app, app_pointer_none );
 	#ifdef _DEBUG	
 		app_screenmode_set( app, APP_SCREENMODE_WINDOW );
 	#endif	
